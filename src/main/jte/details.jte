@@ -119,8 +119,15 @@
 
             <tr>
                 !{
-                    BigDecimal sumaNetto = invoice.getFa().getP131().add(invoice.getFa().getP132());
-                    BigDecimal sumaVat = invoice.getFa().getP141().add(invoice.getFa().getP142());
+                    BigDecimal sumaNetto = invoice.getFa().getP131();
+                    if (invoice.getFa().getP132() != null) {
+                        sumaNetto = invoice.getFa().getP131().add(invoice.getFa().getP132());
+                    }
+
+                    BigDecimal sumaVat = invoice.getFa().getP141();
+                    if (invoice.getFa().getP142() != null) {
+                        sumaVat = invoice.getFa().getP141().add(invoice.getFa().getP142());
+                    }
                  }
                 <td>SUMA</td>
                 <td class="has-text-right">${sumaNetto} zł</td>
