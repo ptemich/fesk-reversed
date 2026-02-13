@@ -48,8 +48,8 @@
     <table class="table is-fullwidth">
         <tbody>
             <tr>
+                <td colspan="2">SPRZEDAWCA</td>
                 <td colspan="2">NABYWCA</td>
-                <td colspan="2">ODBIORCA</td>
             </tr>
 
             <tr>

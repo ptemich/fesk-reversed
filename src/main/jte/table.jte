@@ -7,7 +7,7 @@
 
 <div id="invoices">
     @if(invoicesPackage != null)
-        <p class="pl-2">Lista pobrana o: ${invoicesPackage.getFormatedTime()}</p>
+        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
         @if(invoicesPackage.invoices() != null)
             <table class="table is-striped is-fullwidth">
                 <thead>
@@ -18,7 +18,7 @@
                     <th class="has-text-right">Vat</th>
                     <th class="has-text-right">Brutto</th>
                     <th>Numer KSEF</th>
-                    <th class="has-text-centered">ACARD</th>
+                    <th class="has-text-centered">AKORD</th>
                     <th class="has-text-centered">KSEF</th>
                 </tr>
                 </thead>
@@ -62,6 +62,6 @@
           hx-target="#invoices"
           hx-swap="outerHTML"
           class="button is-black ml-2">
-        ODŚWIERZ
+        ODŚWIEŻ
     </span>
 </div>
