@@ -9,7 +9,6 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import pl.akmf.ksef.sdk.client.model.invoice.InvoiceMetadata;
 
 import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import pl.ptemich.ksef.acard.AcardService;
