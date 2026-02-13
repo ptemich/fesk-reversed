@@ -19,7 +19,7 @@
                     <th class="has-text-right">Brutto</th>
                     <th>Numer KSEF</th>
                     <th class="has-text-centered">ACARD</th>
-                    <th></th>
+                    <th class="has-text-centered">KSEF</th>
                 </tr>
                 </thead>
                 @for(InvoiceMetadata invoice : invoicesPackage.invoices())
@@ -30,11 +30,13 @@
                         <td class="has-text-right">${String.format("%.2f", invoice.getVatAmount())} zł</td>
                         <td class="has-text-right">${String.format("%.2f", invoice.getGrossAmount())} zł</td>
                         <td>
-                            <a href="/details/ksef/${invoice.getKsefNumber()}" target="_blank">${invoice.getKsefNumber()}</a>
+                            ${invoice.getKsefNumber()}
                         </td>
                         <td class="has-text-centered">
                             @if(acardInvoices.contains(invoice.getKsefNumber()))
-                                <a href="/details/acard/${invoice.getKsefNumber()}" target="_blank">✅</a>
+                                <a href="/details/acard/${invoice.getKsefNumber()}" target="_blank">
+                                    <span class="button is-success has-text-white is-size-7">POKAZ</span>
+                                </a>
                             @else
                                 <span hx-get="/copy/${invoice.getKsefNumber()}"
                                       hx-target="#invoices"
@@ -42,7 +44,15 @@
                                       class="button is-black is-size-7">KOPIUJ</span>
                             @endif
                         </td>
-                        <td><a href="/download/xml/${invoice.getKsefNumber()}">XML</a></td>
+
+                        <td>
+                            <a href="/download/xml/${invoice.getKsefNumber()}">
+                                <span class="button is-info has-text-white is-size-7">POBIEZ</span>
+                            </a>
+                            <a href="/details/ksef/${invoice.getKsefNumber()}" target="_blank">
+                                <span class="button is-success has-text-white is-size-7">POKAZ</span>
+                            </a>
+                        </td>
                     </tr>
                 @endfor
             </table>

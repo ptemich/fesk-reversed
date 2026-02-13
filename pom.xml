@@ -129,6 +129,8 @@
     </dependencies>
 
     <build>
+        <finalName>ksef-automobil</finalName>
+
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

@@ -5,7 +5,7 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public final class JtetableGenerated {
 	public static final String JTE_NAME = "table.jte";
-	public static final int[] JTE_LINE_INFO = {0,0,1,2,4,4,4,4,8,8,8,9,9,9,10,10,24,24,26,26,26,27,27,27,28,28,28,29,29,29,30,30,30,32,32,32,32,32,32,32,35,35,36,36,36,36,37,37,38,38,38,38,42,42,44,44,44,44,46,46,48,48,49,49,56,56,56,4,5,5,5,5};
+	public static final int[] JTE_LINE_INFO = {0,0,1,2,4,4,4,4,8,8,8,9,9,9,10,10,24,24,26,26,26,27,27,27,28,28,28,29,29,29,30,30,30,32,32,32,35,35,36,36,36,36,39,39,40,40,40,40,44,44,48,48,48,48,51,51,51,51,56,56,58,58,59,59,66,66,66,4,5,5,5,5};
 	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, InvoicesPackage invoicesPackage, Set<String> acardInvoices) {
 		jteOutput.writeContent("\n<div id=\"invoices\">\n    ");
 		if (invoicesPackage != null) {
@@ -14,7 +14,7 @@ public final class JtetableGenerated {
 			jteOutput.writeUserContent(invoicesPackage.getFormatedTime());
 			jteOutput.writeContent("</p>\n        ");
 			if (invoicesPackage.invoices() != null) {
-				jteOutput.writeContent("\n            <table class=\"table is-striped is-fullwidth\">\n                <thead>\n                <tr>\n                    <th>Sprzedawca</th>\n                    <th class=\"has-text-centered\">Data wystawienia</th>\n                    <th class=\"has-text-right\">Netto</th>\n                    <th class=\"has-text-right\">Vat</th>\n                    <th class=\"has-text-right\">Brutto</th>\n                    <th>Numer KSEF</th>\n                    <th class=\"has-text-centered\">ACARD</th>\n                    <th></th>\n                </tr>\n                </thead>\n                ");
+				jteOutput.writeContent("\n            <table class=\"table is-striped is-fullwidth\">\n                <thead>\n                <tr>\n                    <th>Sprzedawca</th>\n                    <th class=\"has-text-centered\">Data wystawienia</th>\n                    <th class=\"has-text-right\">Netto</th>\n                    <th class=\"has-text-right\">Vat</th>\n                    <th class=\"has-text-right\">Brutto</th>\n                    <th>Numer KSEF</th>\n                    <th class=\"has-text-centered\">ACARD</th>\n                    <th class=\"has-text-centered\">KSEF</th>\n                </tr>\n                </thead>\n                ");
 				for (InvoiceMetadata invoice : invoicesPackage.invoices()) {
 					jteOutput.writeContent("\n                    <tr>\n                        <td>");
 					jteOutput.setContext("td", null);
@@ -31,20 +31,16 @@ public final class JtetableGenerated {
 					jteOutput.writeContent(" zł</td>\n                        <td class=\"has-text-right\">");
 					jteOutput.setContext("td", null);
 					jteOutput.writeUserContent(String.format("%.2f", invoice.getGrossAmount()));
-					jteOutput.writeContent(" zł</td>\n                        <td>\n                            <a href=\"/details/ksef/");
-					jteOutput.setContext("a", "href");
+					jteOutput.writeContent(" zł</td>\n                        <td>\n                            ");
+					jteOutput.setContext("td", null);
 					jteOutput.writeUserContent(invoice.getKsefNumber());
-					jteOutput.setContext("a", null);
-					jteOutput.writeContent("\" target=\"_blank\">");
-					jteOutput.setContext("a", null);
-					jteOutput.writeUserContent(invoice.getKsefNumber());
-					jteOutput.writeContent("</a>\n                        </td>\n                        <td class=\"has-text-centered\">\n                            ");
+					jteOutput.writeContent("\n                        </td>\n                        <td class=\"has-text-centered\">\n                            ");
 					if (acardInvoices.contains(invoice.getKsefNumber())) {
 						jteOutput.writeContent("\n                                <a href=\"/details/acard/");
 						jteOutput.setContext("a", "href");
 						jteOutput.writeUserContent(invoice.getKsefNumber());
 						jteOutput.setContext("a", null);
-						jteOutput.writeContent("\" target=\"_blank\">✅</a>\n                            ");
+						jteOutput.writeContent("\" target=\"_blank\">\n                                    <span class=\"button is-success has-text-white is-size-7\">POKAZ</span>\n                                </a>\n                            ");
 					} else {
 						jteOutput.writeContent("\n                                <span hx-get=\"/copy/");
 						jteOutput.setContext("span", "hx-get");
@@ -52,11 +48,15 @@ public final class JtetableGenerated {
 						jteOutput.setContext("span", null);
 						jteOutput.writeContent("\"\n                                      hx-target=\"#invoices\"\n                                      hx-swap=\"outerHTML\"\n                                      class=\"button is-black is-size-7\">KOPIUJ</span>\n                            ");
 					}
-					jteOutput.writeContent("\n                        </td>\n                        <td><a href=\"/download/xml/");
+					jteOutput.writeContent("\n                        </td>\n\n                        <td>\n                            <a href=\"/download/xml/");
 					jteOutput.setContext("a", "href");
 					jteOutput.writeUserContent(invoice.getKsefNumber());
 					jteOutput.setContext("a", null);
-					jteOutput.writeContent("\">XML</a></td>\n                    </tr>\n                ");
+					jteOutput.writeContent("\">\n                                <span class=\"button is-info has-text-white is-size-7\">POBIEZ</span>\n                            </a>\n                            <a href=\"/details/ksef/");
+					jteOutput.setContext("a", "href");
+					jteOutput.writeUserContent(invoice.getKsefNumber());
+					jteOutput.setContext("a", null);
+					jteOutput.writeContent("\" target=\"_blank\">\n                                <span class=\"button is-success has-text-white is-size-7\">POKAZ</span>\n                            </a>\n                        </td>\n                    </tr>\n                ");
 				}
 				jteOutput.writeContent("\n            </table>\n        ");
 			}
