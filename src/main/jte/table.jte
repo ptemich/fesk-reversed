@@ -47,7 +47,7 @@
 
                         <td>
                             <a href="/download/xml/${invoice.getKsefNumber()}">
-                                <span class="button is-info has-text-white is-size-7">POBIEZ</span>
+                                <span class="button is-info is-size-7">POBIEZ</span>
                             </a>
                             <a href="/details/ksef/${invoice.getKsefNumber()}" target="_blank">
                                 <span class="button is-success has-text-white is-size-7">POKAZ</span>
