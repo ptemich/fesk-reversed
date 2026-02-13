@@ -1,8 +1,10 @@
 @import pl.ptemich.ksef.ksef.InvoicesPackage
 @import pl.ptemich.ksef.localconf.LocalConfig
+@import java.util.Set
 
 @param LocalConfig localConfig
 @param InvoicesPackage invoicesPackage
+@param Set<String> acardInvoices
 
 <!DOCTYPE html>
 <html lang="en">
@@ -22,7 +24,7 @@
     <h1 class="is-size-1 pl-2 has-text-weight-bold">AUTOMOBIL - KSEF</h1>
 </div>
 
-@template.table(invoicesPackage = invoicesPackage)
+@template.table(invoicesPackage = invoicesPackage, acardInvoices = acardInvoices)
 
 <%--<div>--%>
 <%--    <p><span class="has-text-weight-bold">Scieżka exportu:</span> ${localConfig.getExportPath()}</p>--%>

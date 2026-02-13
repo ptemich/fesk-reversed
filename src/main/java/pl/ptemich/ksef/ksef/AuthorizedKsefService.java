@@ -1,7 +1,7 @@
 package pl.ptemich.ksef.ksef;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.akmf.ksef.sdk.api.DefaultKsefClient;
 import pl.akmf.ksef.sdk.api.builders.auth.AuthKsefTokenRequestBuilder;
@@ -22,23 +22,25 @@ import java.util.List;
 @Service
 public class AuthorizedKsefService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthorizedKsefService.class);
+
+    private final LocalConfigService localConfigService;
+    private final KsefClientConfig ksefClientConfig;
+
+    private LocalConfig localConfig = null;
+    private DefaultKsefClient ksefClient = null;
+    private DefaultCryptographyService cryptographyService = null;
+
     private boolean initialized = false;
     private KsefToken ksefToken = null;
+
+    private List<InvoiceMetadata> invoices;
+    private OffsetDateTime loadedOn;
 
     public AuthorizedKsefService(LocalConfigService localConfigService, KsefClientConfig ksefClientConfig) {
         this.localConfigService = localConfigService;
         this.ksefClientConfig = ksefClientConfig;
     }
-
-    private final LocalConfigService localConfigService;
-    private final KsefClientConfig ksefClientConfig;
-
-    private LocalConfig localConfig = null;// = localConfigService.loadFromDisk();
-    private DefaultKsefClient ksefClient = null;// = ksefClientConfig.initDefaultKsefClient();
-    private DefaultCryptographyService cryptographyService = null;// = ksefClientConfig.initDefaultCryptographyService(ksefClient);
-
-    private List<InvoiceMetadata> invoices;
-    private OffsetDateTime loadedOn;
 
     private void init() {
         if (!initialized) {
@@ -88,13 +90,31 @@ public class AuthorizedKsefService {
 
     private String getAccessToken() {
         if (ksefToken == null || ksefToken.expiresOn().isAfter(OffsetDateTime.now())) {
-            ksefToken = getFreshToken();
+            ksefToken = refreshToken();
+            if (ksefToken == null) {
+                ksefToken = getNewToken(); // refresh failed - get a new one
+            }
         }
 
         return ksefToken.token();
     }
 
-    private KsefToken getFreshToken() {
+    private KsefToken refreshToken() {
+        if (ksefToken != null && ksefToken.refreshExpiresOn().isBefore(OffsetDateTime.now())) {
+            try {
+                AuthenticationTokenRefreshResponse authenticationTokenRefreshResponse = ksefClient.refreshAccessToken(ksefToken.refreshToken());
+                TokenInfo accessToken = authenticationTokenRefreshResponse.getAccessToken();
+                return new KsefToken(accessToken.getToken(), accessToken.getValidUntil(), ksefToken.refreshToken(), ksefToken.refreshExpiresOn());
+            } catch (ApiException e) {
+                log.error("Failed to refresh token", e);
+                throw new RuntimeException(e);
+            }
+        }
+
+        return null;
+    }
+
+    private KsefToken getNewToken() {
         init();
         try {
             AuthenticationChallengeResponse authChallenge = ksefClient.getAuthChallenge();
@@ -109,16 +129,28 @@ public class AuthorizedKsefService {
             SignatureResponse signatureResponse = ksefClient.authenticateByKSeFToken(authKsefTokenRequest);
             String tempAccessToken = signatureResponse.getAuthenticationToken().getToken();
 
-            // TODO add waiting
             AuthStatus authStatus = ksefClient.getAuthStatus(signatureResponse.getReferenceNumber(), tempAccessToken);
+            int maxTries = 5;
+            while (maxTries > 0 && !authStatus.getStatus().getCode().equals(200)) {
+                maxTries--;
+                Thread.sleep(1000);
+                authStatus = ksefClient.getAuthStatus(signatureResponse.getReferenceNumber(), tempAccessToken);
+            }
 
             AuthOperationStatusResponse authOperationStatusResponse = ksefClient.redeemToken(tempAccessToken);
+
             TokenInfo accessToken = authOperationStatusResponse.getAccessToken();
             TokenInfo refreshToken = authOperationStatusResponse.getRefreshToken();
 
-            return new KsefToken(accessToken.getToken(), accessToken.getValidUntil(), refreshToken.getToken());
+            return new KsefToken(accessToken.getToken(), accessToken.getValidUntil(), refreshToken.getToken(), refreshToken.getValidUntil());
+
         } catch (ApiException e) {
+            log.error("Failed to fetch invoices", e);
+            throw new RuntimeException(e);
+        } catch (InterruptedException e) {
+            log.error("Failed to fetch invoices", e);
             throw new RuntimeException(e);
         }
     }
+
 }

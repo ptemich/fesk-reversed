@@ -11,24 +11,26 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import pl.akmf.ksef.sdk.client.model.invoice.InvoiceMetadata;
 
+import pl.ptemich.ksef.acard.AcardService;
 import pl.ptemich.ksef.ksef.AuthorizedKsefService;
 import pl.ptemich.ksef.ksef.InvoicesPackage;
 import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
 import java.util.List;
+import java.util.Set;
 
 @Controller
 public class IndexController {
 
     private final LocalConfigService localConfigService;
     private final AuthorizedKsefService authorizedKsefService;
-//    private final InvoicesService invoicesService;
+    private final AcardService acardService;
 
-    public IndexController(LocalConfigService localConfigService, AuthorizedKsefService authorizedKsefService) {
+    public IndexController(LocalConfigService localConfigService, AuthorizedKsefService authorizedKsefService, AcardService acardService) {
         this.localConfigService = localConfigService;
         this.authorizedKsefService = authorizedKsefService;
-
+        this.acardService = acardService;
     }
 
     @GetMapping
@@ -39,6 +41,9 @@ public class IndexController {
         InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false);
         model.addAttribute("invoicesPackage", invoicesPackage);
 
+        Set<String> acardInvoices = acardService.loadAcardList();
+        model.addAttribute("acardInvoices", acardInvoices);
+
         return "index";
     }
 
@@ -46,6 +51,9 @@ public class IndexController {
     public String reload(Model model) {
         InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(true);
         model.addAttribute("invoicesPackage", invoicesPackage);
+
+        Set<String> acardInvoices = acardService.loadAcardList();
+        model.addAttribute("acardInvoices", acardInvoices);
 
         return "table";
     }
