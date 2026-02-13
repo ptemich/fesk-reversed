@@ -7,14 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
-import pl.ptemich.ksef.acard.AcardService;
-import pl.ptemich.ksef.localconf.LocalConfig;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 @Service
 public class InvoicesService {
