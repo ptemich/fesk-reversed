@@ -58,6 +58,20 @@ public class IndexController {
         return "table";
     }
 
+    @GetMapping("/copy/{ksefNumber}")
+    public String copy(@PathVariable String ksefNumber, Model model) {
+        byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
+        acardService.save(ksefNumber, content);
+
+        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(true);
+        model.addAttribute("invoicesPackage", invoicesPackage);
+
+        Set<String> acardInvoices = acardService.loadAcardList();
+        model.addAttribute("acardInvoices", acardInvoices);
+
+        return "table";
+    }
+
     @GetMapping("/download/xml/{ksefNumber}")
     public ResponseEntity<byte[]> downloadXml(@PathVariable String ksefNumber) {
         byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);

@@ -1,10 +1,17 @@
 package pl.ptemich.ksef.acard;
 
 import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import pl.ptemich.ksef.ksef.AuthorizedKsefService;
 import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -15,6 +22,8 @@ import java.util.stream.Stream;
 
 @Service
 public class AcardService {
+
+    private static final Logger log = LoggerFactory.getLogger(AcardService.class);
 
     private final LocalConfigService localConfigService;
 
@@ -43,4 +52,22 @@ public class AcardService {
         return inviceXmls;
     }
 
+    public void save(String ksefNumber, byte[] xmlContent) {
+        try {
+            LocalConfig localConfig = localConfigService.loadFromDisk();
+            File acardDirectory = new File(localConfig.getExportPath());
+            File outputFile = new File(acardDirectory, ksefNumber + ".xml");
+            outputFile.createNewFile();
+            FileOutputStream outputStream = new FileOutputStream(outputFile);
+            outputStream.write(xmlContent);
+            outputStream.flush();
+            outputStream.close();
+        } catch (FileNotFoundException e) {
+            log.error("Failed to save invoice", e);
+            throw new RuntimeException(e);
+        } catch (IOException e) {
+            log.error("Failed to save invoice", e);
+            throw new RuntimeException(e);
+        }
+    }
 }
