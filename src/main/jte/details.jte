@@ -16,6 +16,14 @@
         href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
 >
 <style>
+    @media print {
+        .is-size-2, .is-size-3, .is-size-4 {
+            font-size: 16pt !important;
+        }
+        table {
+            font-size: 8pt !important;
+        }
+    }
 </style>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
 <body>
@@ -27,11 +35,14 @@
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
         String dataWystawienia = sdf.format(invoice.getNaglowek().getDataWytworzeniaFa().toGregorianCalendar().getTime());
     }
-    <p class="is-size-4 pl-2">Data wystawienia: ${dataWystawienia}</p>
-    !{
-        var rachunekBankowy = invoice.getFa().getPlatnosc().getRachunekBankowy().getFirst();
-    }
-    <p class="is-size-4 pl-2">${rachunekBankowy.getNrRB()} - ${rachunekBankowy.getOpisRachunku()}</p>
+
+    @if(invoice.getFa().getPlatnosc() != null)
+        <p class="is-size-4 pl-2">Data wystawienia: ${dataWystawienia}</p>
+        !{
+            var rachunekBankowy = invoice.getFa().getPlatnosc().getRachunekBankowy().getFirst();
+        }
+        <p class="is-size-4 pl-2">${rachunekBankowy.getNrRB()} - ${rachunekBankowy.getNazwaBanku()} ${rachunekBankowy.getOpisRachunku()}</p>
+    @endif
 
 
     <table class="table is-fullwidth">
@@ -90,32 +101,36 @@
 
     <table class="table mx-auto">
         <tbody>
-            <tr class="is-size-4">
-                !{
-                    var terminPlatnosci = invoice.getFa().getPlatnosc().getTerminPlatnosci().getFirst();
-                 }
-                <td colspan="2">Termin zapłaty</td>
-                <td colspan="5" class="has-text-right has-text-weight-bold">${terminPlatnosci.getTermin().toString()}</td>
-            </tr>
+            @if(invoice.getFa().getPlatnosc() != null)
+                <tr class="is-size-4">
+                    !{
+                        var terminPlatnosci = invoice.getFa().getPlatnosc().getTerminPlatnosci().getFirst();
+                     }
+                    <td colspan="2">Termin zapłaty</td>
+                    <td colspan="5" class="has-text-right has-text-weight-bold">${terminPlatnosci.getTermin().toString()}</td>
+                </tr>
+            @endif
 
             <tr>
                 <td>NETTO</td>
                 <td class="has-text-right">${invoice.getFa().getP131()} zł</td>
 
-                <td>VAT</td>
+                <td>VAT (23%)</td>
                 <td class="has-text-right">${invoice.getFa().getP141()} zł</td>
                 <td colspan="3"></td>
             </tr>
 
-            <tr>
-                <td>NETTO</td>
-                <td class="has-text-right">${invoice.getFa().getP132()} zł</td>
+            @if(invoice.getFa().getP132() != null)
+                <tr>
+                    <td>NETTO</td>
+                    <td class="has-text-right">${invoice.getFa().getP132()} zł</td>
 
-                <td>VAT</td>
-                <td class="has-text-right">${invoice.getFa().getP142()} zł</td>
+                    <td>VAT (8%)</td>
+                    <td class="has-text-right">${invoice.getFa().getP142()} zł</td>
 
-                <td colspan="3"></td>
-            </tr>
+                    <td colspan="3"></td>
+                </tr>
+            @endif
 
             <tr>
                 !{

@@ -41,14 +41,14 @@
                                 <span hx-get="/copy/${invoice.getKsefNumber()}"
                                       hx-target="#invoices"
                                       hx-swap="outerHTML"
-                                      class="button is-black is-size-7">KOPIUJ</span>
+                                      class="button is-black is-size-7">POBIERZ</span>
                             @endif
                         </td>
 
-                        <td>
-                            <a href="/download/xml/${invoice.getKsefNumber()}">
-                                <span class="button is-info is-size-7">POBIEZ</span>
-                            </a>
+                        <td class="has-text-centered">
+<%--                            <a href="/download/xml/${invoice.getKsefNumber()}">--%>
+<%--                                <span class="button is-info is-size-7">POBIEZ</span>--%>
+<%--                            </a>--%>
                             <a href="/details/ksef/${invoice.getKsefNumber()}" target="_blank">
                                 <span class="button is-success has-text-white is-size-7">POKAZ</span>
                             </a>
