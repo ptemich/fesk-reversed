@@ -1,17 +1,18 @@
 package pl.ptemich.ksef.acard;
 
+import jakarta.xml.bind.JAXBContext;
+import jakarta.xml.bind.JAXBException;
+import jakarta.xml.bind.Unmarshaller;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import pl.ptemich.ksef.ksef.AuthorizedKsefService;
 import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -67,6 +68,18 @@ public class AcardService {
             throw new RuntimeException(e);
         } catch (IOException e) {
             log.error("Failed to save invoice", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public byte[] load(String ksefNumber) {
+        LocalConfig localConfig = localConfigService.loadFromDisk();
+
+        Path path = Paths.get(localConfig.getExportPath() + "/" + ksefNumber +  ".xml");
+        try {
+            byte[] xmlBytes = Files.readAllBytes(path);
+            return xmlBytes;
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }

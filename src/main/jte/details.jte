@@ -1,9 +1,7 @@
-@import pl.akmf.ksef.sdk.client.model.invoice.InvoiceMetadata
-@import java.util.List
-@import pl.ptemich.ksef.localconf.LocalConfig
+@import pl.gov.crd.wzor._2025._06._25._13775.Faktura
 
-@param LocalConfig localConfig
-@param List<InvoiceMetadata> invoices
+@param String ksefNumber
+@param Faktura invoice
 
 <!DOCTYPE html>
 <html lang="en">
@@ -24,37 +22,35 @@
 </div>
 
 <div>
-  @if(invoices != null)
-      <table class="table">
-          <thead>
-            <tr>
-                <th>Sprzedawca</th>
-                <th>Data wystawienia</th>
-                <th>Netto</th>
-                <th>Vat</th>
-                <th>Brutto</th>
-                <th>Numer KSEF</th>
-                <th></th>
-            </tr>
-          </thead>
-        @for(InvoiceMetadata invoice : invoices)
-          <tr>
-              <td>${invoice.getSeller().getName()}</td>
-              <td>${invoice.getIssueDate().toString()}</td>
-              <td>${invoice.getNetAmount()}</td>
-              <td>${invoice.getVatAmount()}</td>
-              <td>${invoice.getGrossAmount()}</td>
-              <td><a href="/details/${invoice.getKsefNumber()}">${invoice.getKsefNumber()}</a></td>
-              <td><a href="/download/xml/${invoice.getKsefNumber()}">XML</a></td>
-          </tr>
-        @endfor
-      </table>
-  @endif
-</div>
+    ${ksefNumber}
+    ${invoice.getNaglowek().getDataWytworzeniaFa().toString()}
 
-<div>
-    <p><span class="has-text-weight-bold">Scieżka exportu:</span> ${localConfig.getExportPath()}</p>
-    <p><span class="has-text-weight-bold">Token:</span> ${localConfig.getKsefToken()}</p>
+    <table class="table is-striped is-fullwidth">
+        <thead>
+            <tr>
+                <th>Nr. wiersza</th>
+                <th>Nazwa</th>
+                <th class="has-text-centered">Index</th>
+                <th class="has-text-centered">Jednostka</th>
+                <th class="has-text-centered">Ilość</th>
+                <th class="has-text-right">Cena jednostki</th>
+                <th class="has-text-right">Cena razem</th>
+            </tr>
+        </thead>
+        <tbody>
+            @for(var wierszFaktury : invoice.getFa().getFaWiersz())
+                <tr>
+                    <td>${wierszFaktury.getNrWierszaFa()}</td>
+                    <td>${wierszFaktury.getP7()}</td>
+                    <td class="has-text-centered">${wierszFaktury.getIndeks()}</td>
+                    <td class="has-text-centered">${wierszFaktury.getP8A()}</td>
+                    <td class="has-text-centered">${wierszFaktury.getP8B()}</td>
+                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP9A())} zł</td>
+                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP11())} zł</td>
+                </tr>
+            @endfor
+        </tbody>
+    </table>
 </div>
 
 </body>

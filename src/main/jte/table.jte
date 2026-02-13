@@ -32,7 +32,7 @@
                         <td>${invoice.getKsefNumber()}</td>
                         <td class="has-text-centered">
                             @if(acardInvoices.contains(invoice.getKsefNumber()))
-                                ✅
+                                <a href="/details/acard/${invoice.getKsefNumber()}" target="_blank">✅</a>
                             @else
                                 <span hx-get="/copy/${invoice.getKsefNumber()}"
                                       hx-target="#invoices"

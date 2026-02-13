@@ -11,7 +11,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import pl.akmf.ksef.sdk.client.model.invoice.InvoiceMetadata;
 
+import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import pl.ptemich.ksef.acard.AcardService;
+import pl.ptemich.ksef.invoices.InvoicesService;
 import pl.ptemich.ksef.ksef.AuthorizedKsefService;
 import pl.ptemich.ksef.ksef.InvoicesPackage;
 import pl.ptemich.ksef.localconf.LocalConfig;
@@ -26,11 +28,18 @@ public class IndexController {
     private final LocalConfigService localConfigService;
     private final AuthorizedKsefService authorizedKsefService;
     private final AcardService acardService;
+    private final InvoicesService invoicesService;
 
-    public IndexController(LocalConfigService localConfigService, AuthorizedKsefService authorizedKsefService, AcardService acardService) {
+    public IndexController(
+            LocalConfigService localConfigService,
+            AuthorizedKsefService authorizedKsefService,
+            AcardService acardService,
+            InvoicesService invoicesService
+    ) {
         this.localConfigService = localConfigService;
         this.authorizedKsefService = authorizedKsefService;
         this.acardService = acardService;
+        this.invoicesService = invoicesService;
     }
 
     @GetMapping
@@ -85,14 +94,17 @@ public class IndexController {
         return new ResponseEntity<>(content, headers, HttpStatus.OK);
     }
 
-//    @GetMapping("/details/{ksefNumber}")
-//    public String details(@PathVariable String ksefNumber, Model model) {
-//        byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
-//
-//        Faktura invoice = invoicesService.load(content);
-//        model.addAttribute("invoice", invoice);
-//
-//        return "details";
-//    }
+    @GetMapping("/details/acard/{ksefNumber}")
+    public String details(@PathVariable String ksefNumber, Model model) {
+        // byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
+
+        model.addAttribute("ksefNumber", ksefNumber);
+
+        byte[] xmlBytes = acardService.load(ksefNumber);
+        Faktura invoice = invoicesService.convert(xmlBytes);
+        model.addAttribute("invoice", invoice);
+
+        return "details";
+    }
 
 }
