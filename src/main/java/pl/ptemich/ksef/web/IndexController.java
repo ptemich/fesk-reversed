@@ -95,12 +95,21 @@ public class IndexController {
     }
 
     @GetMapping("/details/acard/{ksefNumber}")
-    public String details(@PathVariable String ksefNumber, Model model) {
-        // byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
-
+    public String detailsAcard(@PathVariable String ksefNumber, Model model) {
         model.addAttribute("ksefNumber", ksefNumber);
 
         byte[] xmlBytes = acardService.load(ksefNumber);
+        Faktura invoice = invoicesService.convert(xmlBytes);
+        model.addAttribute("invoice", invoice);
+
+        return "details";
+    }
+
+    @GetMapping("/details/ksef/{ksefNumber}")
+    public String detailsKsef(@PathVariable String ksefNumber, Model model) {
+        model.addAttribute("ksefNumber", ksefNumber);
+
+        byte[] xmlBytes = authorizedKsefService.loadInvoiceXml(ksefNumber);
         Faktura invoice = invoicesService.convert(xmlBytes);
         model.addAttribute("invoice", invoice);
 

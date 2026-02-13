@@ -5,7 +5,7 @@ import java.util.Set;
 @SuppressWarnings("unchecked")
 public final class JtetableGenerated {
 	public static final String JTE_NAME = "table.jte";
-	public static final int[] JTE_LINE_INFO = {0,0,1,2,4,4,4,4,8,8,8,9,9,9,10,10,24,24,26,26,26,27,27,27,28,28,28,29,29,29,30,30,30,31,31,31,33,33,34,34,34,34,35,35,36,36,36,36,40,40,42,42,42,42,44,44,46,46,47,47,54,54,54,4,5,5,5,5};
+	public static final int[] JTE_LINE_INFO = {0,0,1,2,4,4,4,4,8,8,8,9,9,9,10,10,24,24,26,26,26,27,27,27,28,28,28,29,29,29,30,30,30,32,32,32,32,32,32,32,35,35,36,36,36,36,37,37,38,38,38,38,42,42,44,44,44,44,46,46,48,48,49,49,56,56,56,4,5,5,5,5};
 	public static void render(gg.jte.html.HtmlTemplateOutput jteOutput, gg.jte.html.HtmlInterceptor jteHtmlInterceptor, InvoicesPackage invoicesPackage, Set<String> acardInvoices) {
 		jteOutput.writeContent("\n<div id=\"invoices\">\n    ");
 		if (invoicesPackage != null) {
@@ -31,10 +31,14 @@ public final class JtetableGenerated {
 					jteOutput.writeContent(" zł</td>\n                        <td class=\"has-text-right\">");
 					jteOutput.setContext("td", null);
 					jteOutput.writeUserContent(String.format("%.2f", invoice.getGrossAmount()));
-					jteOutput.writeContent(" zł</td>\n                        <td>");
-					jteOutput.setContext("td", null);
+					jteOutput.writeContent(" zł</td>\n                        <td>\n                            <a href=\"/details/ksef/");
+					jteOutput.setContext("a", "href");
 					jteOutput.writeUserContent(invoice.getKsefNumber());
-					jteOutput.writeContent("</td>\n                        <td class=\"has-text-centered\">\n                            ");
+					jteOutput.setContext("a", null);
+					jteOutput.writeContent("\" target=\"_blank\">");
+					jteOutput.setContext("a", null);
+					jteOutput.writeUserContent(invoice.getKsefNumber());
+					jteOutput.writeContent("</a>\n                        </td>\n                        <td class=\"has-text-centered\">\n                            ");
 					if (acardInvoices.contains(invoice.getKsefNumber())) {
 						jteOutput.writeContent("\n                                <a href=\"/details/acard/");
 						jteOutput.setContext("a", "href");

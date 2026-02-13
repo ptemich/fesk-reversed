@@ -29,7 +29,9 @@
                         <td class="has-text-right">${String.format("%.2f", invoice.getNetAmount())} zł</td>
                         <td class="has-text-right">${String.format("%.2f", invoice.getVatAmount())} zł</td>
                         <td class="has-text-right">${String.format("%.2f", invoice.getGrossAmount())} zł</td>
-                        <td>${invoice.getKsefNumber()}</td>
+                        <td>
+                            <a href="/details/ksef/${invoice.getKsefNumber()}" target="_blank">${invoice.getKsefNumber()}</a>
+                        </td>
                         <td class="has-text-centered">
                             @if(acardInvoices.contains(invoice.getKsefNumber()))
                                 <a href="/details/acard/${invoice.getKsefNumber()}" target="_blank">✅</a>
