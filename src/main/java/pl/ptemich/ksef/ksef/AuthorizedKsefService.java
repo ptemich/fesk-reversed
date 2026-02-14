@@ -22,7 +22,7 @@ import java.util.List;
 @Service
 public class AuthorizedKsefService {
 
-    private final static int INVOICES_PAGE_SIZE = 20; // max 250
+    private final static int INVOICES_PAGE_SIZE = 50; // max 250
     private static final Logger log = LoggerFactory.getLogger(AuthorizedKsefService.class);
 
     private final LocalConfigService localConfigService;

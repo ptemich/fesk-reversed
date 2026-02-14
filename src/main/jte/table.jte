@@ -7,7 +7,6 @@
 
 <div id="invoices">
     @if(invoicesPackage != null)
-        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
         @if(invoicesPackage.invoices() != null)
             <table class="table is-striped is-fullwidth">
                 <thead>
@@ -57,6 +56,8 @@
                 @endfor
             </table>
         @endif
+
+        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
     @endif
     <span hx-get="/reload"
           hx-target="#invoices"
