@@ -89,6 +89,7 @@ public class AuthorizedKsefService {
 
                 loadedOn = OffsetDateTime.now();
             } catch (ApiException e) {
+                log.error("Failed to fetch invoices", e);
                 throw new RuntimeException(e);
             }
         }
@@ -101,12 +102,13 @@ public class AuthorizedKsefService {
         try {
             return ksefClient.getInvoice(ksefNumber, accessToken);
         } catch (ApiException e) {
+            log.error("Failed to fetch invoice " + ksefNumber, e);
             throw new RuntimeException(e);
         }
     }
 
     private String getAccessToken() {
-        if (ksefToken == null || ksefToken.expiresOn().isAfter(OffsetDateTime.now())) {
+        if (ksefToken == null || ksefToken.expiresOn().isBefore(OffsetDateTime.now())) {
             ksefToken = refreshToken();
             if (ksefToken == null) {
                 ksefToken = getNewToken(); // refresh failed - get a new one
@@ -117,7 +119,7 @@ public class AuthorizedKsefService {
     }
 
     private KsefToken refreshToken() {
-        if (ksefToken != null && ksefToken.refreshExpiresOn().isBefore(OffsetDateTime.now())) {
+        if (ksefToken != null && ksefToken.refreshExpiresOn().isAfter(OffsetDateTime.now())) {
             try {
                 AuthenticationTokenRefreshResponse authenticationTokenRefreshResponse = ksefClient.refreshAccessToken(ksefToken.refreshToken());
                 TokenInfo accessToken = authenticationTokenRefreshResponse.getAccessToken();
