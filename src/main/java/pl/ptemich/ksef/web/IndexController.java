@@ -14,10 +14,12 @@ import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import pl.ptemich.ksef.acard.AcardService;
 import pl.ptemich.ksef.invoices.InvoicesService;
 import pl.ptemich.ksef.ksef.AuthorizedKsefService;
+import pl.ptemich.ksef.ksef.InvoicesFilter;
 import pl.ptemich.ksef.ksef.InvoicesPackage;
 import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 import java.util.Set;
 
@@ -46,7 +48,8 @@ public class IndexController {
         LocalConfig localConfig = localConfigService.loadFromDisk();
         model.addAttribute("localConfig", localConfig);
 
-        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false);
+        InvoicesFilter invoicesFilter = new InvoicesFilter(OffsetDateTime.now().minusDays(14), OffsetDateTime.now().plusDays(1));
+        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false, invoicesFilter);
         model.addAttribute("invoicesPackage", invoicesPackage);
 
         Set<String> acardInvoices = acardService.loadAcardList();
@@ -57,7 +60,8 @@ public class IndexController {
 
     @GetMapping("/reload")
     public String reload(Model model) {
-        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(true);
+        InvoicesFilter invoicesFilter = new InvoicesFilter(OffsetDateTime.now().minusDays(14), OffsetDateTime.now().plusDays(1));
+        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(true, invoicesFilter);
         model.addAttribute("invoicesPackage", invoicesPackage);
 
         Set<String> acardInvoices = acardService.loadAcardList();
@@ -71,7 +75,8 @@ public class IndexController {
         byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
         acardService.save(ksefNumber, content);
 
-        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(true);
+        InvoicesFilter invoicesFilter = new InvoicesFilter(OffsetDateTime.now().minusDays(14), OffsetDateTime.now().plusDays(1));
+        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false, invoicesFilter);
         model.addAttribute("invoicesPackage", invoicesPackage);
 
         Set<String> acardInvoices = acardService.loadAcardList();

@@ -22,6 +22,7 @@ import java.util.List;
 @Service
 public class AuthorizedKsefService {
 
+    private final static int INVOICES_PAGE_SIZE = 20; // max 250
     private static final Logger log = LoggerFactory.getLogger(AuthorizedKsefService.class);
 
     private final LocalConfigService localConfigService;
@@ -51,25 +52,41 @@ public class AuthorizedKsefService {
         }
     }
 
-    public InvoicesPackage loadInvoices(boolean forceRefresh) {
+    public InvoicesPackage loadInvoices(boolean forceRefresh, InvoicesFilter invoicesFilter) {
         if (forceRefresh || invoices == null) {
             String accessToken = getAccessToken();
 
             InvoiceQueryFilters filter = new InvoiceQueryFiltersBuilder()
                     .withSubjectType(InvoiceQuerySubjectType.SUBJECT2)
-                    .withDateRange(new InvoiceQueryDateRange(InvoiceQueryDateType.INVOICING, OffsetDateTime.now().minusDays(5), OffsetDateTime.now().plusDays(5)))
+                    .withDateRange(new InvoiceQueryDateRange(InvoiceQueryDateType.INVOICING, invoicesFilter.from(), invoicesFilter.to()))
                     .build();
 
             try {
+                int pageOffset = 0;
+
                 QueryInvoiceMetadataResponse queryInvoiceMetadataResponse = ksefClient.queryInvoiceMetadata(
-                        0,
-                        20,
-                        SortOrder.ASC,
+                        pageOffset,
+                        INVOICES_PAGE_SIZE,
+                        SortOrder.DESC,
                         filter,
                         accessToken
                 );
 
-                invoices = queryInvoiceMetadataResponse.getInvoices().reversed();
+                invoices = queryInvoiceMetadataResponse.getInvoices();
+
+                while (queryInvoiceMetadataResponse.getHasMore()) {
+                    pageOffset++;
+                    queryInvoiceMetadataResponse = ksefClient.queryInvoiceMetadata(
+                            pageOffset,
+                            INVOICES_PAGE_SIZE,
+                            SortOrder.DESC,
+                            filter,
+                            accessToken
+                    );
+
+                    invoices.addAll(queryInvoiceMetadataResponse.getInvoices());
+                }
+
                 loadedOn = OffsetDateTime.now();
             } catch (ApiException e) {
                 throw new RuntimeException(e);
