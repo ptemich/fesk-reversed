@@ -1,6 +1,9 @@
 @import pl.gov.crd.wzor._2025._06._25._13775.Faktura
+@import pl.gov.crd.wzor._2025._06._25._13775.TKluczWartosc
 @import java.math.BigDecimal
 @import java.text.SimpleDateFormat
+@import java.util.List
+@import java.util.stream.Collectors
 
 
 @param String ksefNumber
@@ -75,7 +78,8 @@
             <tr>
                 <th>Nr. wiersza</th>
                 <th>Nazwa</th>
-                <th class="has-text-centered">Index</th>
+                <th class="has-text-left">Index</th>
+                <th class="has-text-left">Dodatkowe uwagi</th>
                 <th class="has-text-centered">Jednostka</th>
                 <th class="has-text-centered">Ilość</th>
                 <th class="has-text-right">Cena jednostki</th>
@@ -88,7 +92,28 @@
                 <tr>
                     <td>${wierszFaktury.getNrWierszaFa()}</td>
                     <td>${wierszFaktury.getP7()}</td>
-                    <td class="has-text-centered">${wierszFaktury.getIndeks()}</td>
+                    <td class="has-text-left">${wierszFaktury.getIndeks()}</td>
+                    <td class="has-text-left">
+                        !{
+                            List<TKluczWartosc> dodatkoweUwagi = invoice.getFa().getDodatkowyOpis().stream()
+                            .filter(uwaga -> uwaga.getNrWiersza() != null)
+                            .filter(uwaga -> uwaga.getNrWiersza().equals(wierszFaktury.getNrWierszaFa()))
+                            .toList();
+                        }
+                        <ul>
+                            @for(var uwaga : dodatkoweUwagi)
+                                <li>
+                                    ${uwaga.getKlucz()}:
+                                    @if(uwaga.getWartosc().startsWith("http"))
+                                        <a href="${uwaga.getWartosc()}" target="_blank">${uwaga.getWartosc()}</a>
+                                    @else
+                                        ${uwaga.getWartosc()}
+                                    @endif
+                                </li>
+                            @endfor
+                        </ul>
+
+                    </td>
                     <td class="has-text-centered">${wierszFaktury.getP8A()}</td>
                     <td class="has-text-centered">${wierszFaktury.getP8B()}</td>
                     <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP9A())} zł</td>
@@ -152,6 +177,31 @@
             </tr>
         </tbody>
     </table>
+
+    !{
+        List<TKluczWartosc> dodatkoweUwagiLista = invoice.getFa().getDodatkowyOpis().stream()
+        .filter(uwaga -> uwaga.getNrWiersza() == null)
+        .toList();
+    }
+
+    @if(!dodatkoweUwagiLista.isEmpty())
+        <table class="table mx-auto">
+            <thead>
+                <tr>
+                    <th colspan="2" class="has-text-centered">Dodatkowe uwagi</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for(var uwaga : dodatkoweUwagiLista)
+                    <tr>
+                        <td class="has-text-weight-bold">${uwaga.getKlucz()}</td>
+                        <td>${uwaga.getWartosc()}</td>
+                    </tr>
+                @endfor
+            </tbody>
+        </table>
+    @endif
+
 </div>
 
 </body>
