@@ -39,14 +39,14 @@
         String dataWystawienia = sdf.format(invoice.getNaglowek().getDataWytworzeniaFa().toGregorianCalendar().getTime());
     }
 
-    @if(invoice.getFa().getPlatnosc() != null)
-        <p class="is-size-4 pl-2">Data wystawienia: ${dataWystawienia}</p>
+
+    <p class="is-size-4 pl-2">Data wystawienia: ${dataWystawienia}</p>
+    @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getRachunekBankowy() != null && !invoice.getFa().getPlatnosc().getRachunekBankowy().isEmpty())
         !{
             var rachunekBankowy = invoice.getFa().getPlatnosc().getRachunekBankowy().getFirst();
         }
         <p class="is-size-4 pl-2">${rachunekBankowy.getNrRB()} - ${rachunekBankowy.getNazwaBanku()} ${rachunekBankowy.getOpisRachunku()}</p>
     @endif
-
 
     <table class="table is-fullwidth">
         <tbody>
@@ -69,6 +69,30 @@
 
                 <td class="has-text-weight-bold">Nazwa</td>
                 <td>${invoice.getPodmiot2().getDaneIdentyfikacyjne().getNazwa()}</td>
+            </tr>
+
+            <tr>
+                <td class="has-text-weight-bold">Adres</td>
+                <td>
+                    ${invoice.getPodmiot1().getAdres().getAdresL1()}
+                </td>
+
+                <td class="has-text-weight-bold">Adres</td>
+                <td>
+                    ${invoice.getPodmiot2().getAdres().getAdresL1()}
+                </td>
+            </tr>
+
+            <tr>
+                <td class="has-text-weight-bold"></td>
+                <td>
+                    ${invoice.getPodmiot1().getAdres().getAdresL2()}
+                </td>
+
+                <td class="has-text-weight-bold"></td>
+                <td>
+                    ${invoice.getPodmiot2().getAdres().getAdresL2()}
+                </td>
             </tr>
         </tbody>
     </table>
@@ -126,7 +150,7 @@
 
     <table class="table mx-auto">
         <tbody>
-            @if(invoice.getFa().getPlatnosc() != null)
+            @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getTerminPlatnosci() != null && !invoice.getFa().getPlatnosc().getTerminPlatnosci().isEmpty())
                 <tr class="is-size-4">
                     !{
                         var terminPlatnosci = invoice.getFa().getPlatnosc().getTerminPlatnosci().getFirst();
@@ -136,22 +160,29 @@
                 </tr>
             @endif
 
+            @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getDataZaplaty() != null)
+                <tr class="is-size-4">
+                    <td colspan="2">Zapłacono</td>
+                    <td colspan="5" class="has-text-right has-text-weight-bold">${invoice.getFa().getPlatnosc().getDataZaplaty().toString()}</td>
+                </tr>
+            @endif
+
             <tr>
                 <td>NETTO</td>
-                <td class="has-text-right">${invoice.getFa().getP131()} zł</td>
+                <td class="has-text-right">${String.format("%.2f", invoice.getFa().getP131())} zł</td>
 
                 <td>VAT (23%)</td>
-                <td class="has-text-right">${invoice.getFa().getP141()} zł</td>
+                <td class="has-text-right">${String.format("%.2f", invoice.getFa().getP141())} zł</td>
                 <td colspan="3"></td>
             </tr>
 
             @if(invoice.getFa().getP132() != null)
                 <tr>
                     <td>NETTO</td>
-                    <td class="has-text-right">${invoice.getFa().getP132()} zł</td>
+                    <td class="has-text-right">${String.format("%.2f", invoice.getFa().getP132())} zł</td>
 
                     <td>VAT (8%)</td>
-                    <td class="has-text-right">${invoice.getFa().getP142()} zł</td>
+                    <td class="has-text-right">${String.format("%.2f", invoice.getFa().getP142())} zł</td>
 
                     <td colspan="3"></td>
                 </tr>
@@ -170,10 +201,10 @@
                     }
                  }
                 <td>SUMA</td>
-                <td class="has-text-right">${sumaNetto} zł</td>
+                <td class="has-text-right">${String.format("%.2f", sumaNetto)} zł</td>
                 <td></td>
-                <td class="has-text-right">${sumaVat} zł</td>
-                <td class="has-text-right has-text-weight-bold">${invoice.getFa().getP15()} zł</td>
+                <td class="has-text-right">${String.format("%.2f", sumaVat)} zł</td>
+                <td class="has-text-right has-text-weight-bold">${String.format("%.2f", invoice.getFa().getP15())} zł</td>
             </tr>
         </tbody>
     </table>
