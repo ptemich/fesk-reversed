@@ -20,8 +20,11 @@
 >
 <style>
     @media print {
-        .is-size-2, .is-size-3, .is-size-4 {
+        .is-size-2, .is-size-3, .is-size-4, .is-size-5 {
             font-size: 16pt !important;
+        }
+        .is-size-5 {
+            font-size: 10pt !important;
         }
         table {
             font-size: 8pt !important;
@@ -32,27 +35,26 @@
 <body>
 
 <div>
-    <h1 class="is-size-2 pl-2 has-text-weight-bold">${ksefNumber}</h1>
-    <p class="is-size-3 pl-2">${invoice.getFa().getP2()}</p>
-    !{
-        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm");
-        String dataWystawienia = sdf.format(invoice.getNaglowek().getDataWytworzeniaFa().toGregorianCalendar().getTime());
-    }
+    <div class="is-flex">
+        <div style="width:80%">
+            <h1 class="is-size-2 pl-2"><span style="color: grey;">KSEF:</span> <span class="has-text-weight-bold">${ksefNumber}</span></h1>
+            <p class="is-size-3 pl-2"><span style="color: grey;">Numer faktury:</span> <span class="has-text-weight-bold">${invoice.getFa().getP2()}</span></p>
+        </div>
 
-
-    <p class="is-size-4 pl-2">Data wystawienia: ${dataWystawienia}</p>
-    @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getRachunekBankowy() != null && !invoice.getFa().getPlatnosc().getRachunekBankowy().isEmpty())
-        !{
-            var rachunekBankowy = invoice.getFa().getPlatnosc().getRachunekBankowy().getFirst();
-        }
-        <p class="is-size-4 pl-2">${rachunekBankowy.getNrRB()} - ${rachunekBankowy.getNazwaBanku()} ${rachunekBankowy.getOpisRachunku()}</p>
-    @endif
+        <div style="width:20%" class="ml-auto">
+            !{
+                SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+                String dataWystawienia = sdf.format(invoice.getNaglowek().getDataWytworzeniaFa().toGregorianCalendar().getTime());
+            }
+            <p class="is-size-5 pl-2 pl-2">Data wystawienia: <br/>  ${dataWystawienia}</p>
+        </div>
+    </div>
 
     <table class="table is-fullwidth">
         <tbody>
             <tr>
-                <td colspan="2">SPRZEDAWCA</td>
-                <td colspan="2">NABYWCA</td>
+                <td colspan="2" class="is-size-5">SPRZEDAWCA</td>
+                <td colspan="2" class="is-size-5">NABYWCA</td>
             </tr>
 
             <tr>
@@ -100,13 +102,13 @@
     <table class="table is-striped is-fullwidth">
         <thead>
             <tr>
-                <th>Nr. wiersza</th>
+                <th>Lp.</th>
                 <th>Nazwa</th>
-                <th class="has-text-left">Index</th>
+                <th class="has-text-left">Symbol</th>
                 <th class="has-text-left">Dodatkowe uwagi</th>
-                <th class="has-text-centered">Jednostka</th>
+                <th class="has-text-centered">JM</th>
                 <th class="has-text-centered">Ilość</th>
-                <th class="has-text-right">Cena jednostki</th>
+                <th class="has-text-right">Cena jednostkowa</th>
                 <th class="has-text-right">Stawka VAT</th>
                 <th class="has-text-right">Cena razem</th>
             </tr>
@@ -140,9 +142,9 @@
                     </td>
                     <td class="has-text-centered">${wierszFaktury.getP8A()}</td>
                     <td class="has-text-centered">${wierszFaktury.getP8B()}</td>
-                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP9A())} zł</td>
+                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP9A())}</td>
                     <td class="has-text-right">${wierszFaktury.getP12()}%</td>
-                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP11())} zł</td>
+                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP11())}</td>
                 </tr>
             @endfor
         </tbody>
@@ -150,16 +152,6 @@
 
     <table class="table mx-auto">
         <tbody>
-            @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getTerminPlatnosci() != null && !invoice.getFa().getPlatnosc().getTerminPlatnosci().isEmpty())
-                <tr class="is-size-4">
-                    !{
-                        var terminPlatnosci = invoice.getFa().getPlatnosc().getTerminPlatnosci().getFirst();
-                     }
-                    <td colspan="2">Termin zapłaty</td>
-                    <td colspan="5" class="has-text-right has-text-weight-bold">${terminPlatnosci.getTermin().toString()}</td>
-                </tr>
-            @endif
-
             @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getDataZaplaty() != null)
                 <tr class="is-size-4">
                     <td colspan="2">Zapłacono</td>
@@ -173,7 +165,7 @@
 
                 <td>VAT (23%)</td>
                 <td class="has-text-right">${String.format("%.2f", invoice.getFa().getP141())} zł</td>
-                <td colspan="3"></td>
+                <td colspan="4"></td>
             </tr>
 
             @if(invoice.getFa().getP132() != null)
@@ -184,7 +176,7 @@
                     <td>VAT (8%)</td>
                     <td class="has-text-right">${String.format("%.2f", invoice.getFa().getP142())} zł</td>
 
-                    <td colspan="3"></td>
+                    <td colspan="4"></td>
                 </tr>
             @endif
 
@@ -204,10 +196,27 @@
                 <td class="has-text-right">${String.format("%.2f", sumaNetto)} zł</td>
                 <td></td>
                 <td class="has-text-right">${String.format("%.2f", sumaVat)} zł</td>
+                <td>BRUTTO</td>
                 <td class="has-text-right has-text-weight-bold">${String.format("%.2f", invoice.getFa().getP15())} zł</td>
             </tr>
         </tbody>
     </table>
+
+    @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getRachunekBankowy() != null && !invoice.getFa().getPlatnosc().getRachunekBankowy().isEmpty())
+        !{
+            var rachunekBankowy = invoice.getFa().getPlatnosc().getRachunekBankowy().getFirst();
+        }
+        <p class="is-size-4 pl-2 has-text-centered">Numer konta: ${rachunekBankowy.getNrRB()} - ${rachunekBankowy.getNazwaBanku()} ${rachunekBankowy.getOpisRachunku()}</p>
+    @endif
+
+    @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getTerminPlatnosci() != null && !invoice.getFa().getPlatnosc().getTerminPlatnosci().isEmpty())
+        <p class="is-size-4 has-text-centered">
+            !{
+                var terminPlatnosci = invoice.getFa().getPlatnosc().getTerminPlatnosci().getFirst();
+            }
+            Termin zapłaty: <span class="has-text-weight-bold">${terminPlatnosci.getTermin().toString()}</span>
+        </p>
+    @endif
 
     !{
         List<TKluczWartosc> dodatkoweUwagiLista = invoice.getFa().getDodatkowyOpis().stream()
