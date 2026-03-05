@@ -59,42 +59,34 @@
 
             <tr>
                 <td class="has-text-weight-bold">NIP</td>
-                <td>${invoice.getPodmiot1().getDaneIdentyfikacyjne().getNIP()}</td>
+                <td class="is-size-5">${invoice.getPodmiot1().getDaneIdentyfikacyjne().getNIP()}</td>
 
                 <td class="has-text-weight-bold">NIP</td>
-                <td>${invoice.getPodmiot2().getDaneIdentyfikacyjne().getNIP()}</td>
+                <td class="is-size-5">${invoice.getPodmiot2().getDaneIdentyfikacyjne().getNIP()}</td>
             </tr>
 
             <tr>
                 <td class="has-text-weight-bold">Nazwa</td>
-                <td>${invoice.getPodmiot1().getDaneIdentyfikacyjne().getNazwa()}</td>
+                <td class="is-size-5">${invoice.getPodmiot1().getDaneIdentyfikacyjne().getNazwa()}</td>
 
                 <td class="has-text-weight-bold">Nazwa</td>
-                <td>${invoice.getPodmiot2().getDaneIdentyfikacyjne().getNazwa()}</td>
+                <td class="is-size-5">${invoice.getPodmiot2().getDaneIdentyfikacyjne().getNazwa()}</td>
             </tr>
 
             <tr>
                 <td class="has-text-weight-bold">Adres</td>
-                <td>
-                    ${invoice.getPodmiot1().getAdres().getAdresL1()}
-                </td>
+                <td class="is-size-5">${invoice.getPodmiot1().getAdres().getAdresL1()}</td>
 
                 <td class="has-text-weight-bold">Adres</td>
-                <td>
-                    ${invoice.getPodmiot2().getAdres().getAdresL1()}
-                </td>
+                <td class="is-size-5">${invoice.getPodmiot2().getAdres().getAdresL1()}</td>
             </tr>
 
             <tr>
                 <td class="has-text-weight-bold"></td>
-                <td>
-                    ${invoice.getPodmiot1().getAdres().getAdresL2()}
-                </td>
+                <td class="is-size-5">${invoice.getPodmiot1().getAdres().getAdresL2()}</td>
 
                 <td class="has-text-weight-bold"></td>
-                <td>
-                    ${invoice.getPodmiot2().getAdres().getAdresL2()}
-                </td>
+                <td class="is-size-5">${invoice.getPodmiot2().getAdres().getAdresL2()}</td>
             </tr>
         </tbody>
     </table>

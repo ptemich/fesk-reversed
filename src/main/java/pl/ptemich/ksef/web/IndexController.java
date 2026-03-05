@@ -20,7 +20,6 @@ import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
 import java.time.OffsetDateTime;
-import java.util.List;
 import java.util.Set;
 
 @Controller
@@ -30,7 +29,7 @@ public class IndexController {
     private final AuthorizedKsefService authorizedKsefService;
     private final AcardService acardService;
     private final InvoicesService invoicesService;
-
+    
     public IndexController(
             LocalConfigService localConfigService,
             AuthorizedKsefService authorizedKsefService,

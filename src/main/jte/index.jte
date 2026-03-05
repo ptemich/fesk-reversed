@@ -26,10 +26,5 @@
 
 @template.table(invoicesPackage = invoicesPackage, acardInvoices = acardInvoices)
 
-<%--<div>--%>
-<%--    <p><span class="has-text-weight-bold">Scieżka exportu:</span> ${localConfig.getExportPath()}</p>--%>
-<%--    <p><span class="has-text-weight-bold">Token:</span> ${localConfig.getKsefToken()}</p>--%>
-<%--</div>--%>
-
 </body>
 </html>

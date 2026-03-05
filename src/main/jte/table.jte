@@ -5,7 +5,20 @@
 @param InvoicesPackage invoicesPackage
 @param Set<String> acardInvoices
 
+
+
+
 <div id="invoices">
+    <div>
+        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
+        <span hx-get="/reload"
+              hx-target="#invoices"
+              hx-swap="outerHTML"
+              class="button is-black ml-2">
+            ODŚWIEŻ
+        </span>
+    </div>
+
     @if(invoicesPackage != null)
         @if(invoicesPackage.invoices() != null)
             <table class="table is-striped is-fullwidth">
@@ -56,13 +69,5 @@
                 @endfor
             </table>
         @endif
-
-        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
     @endif
-    <span hx-get="/reload"
-          hx-target="#invoices"
-          hx-swap="outerHTML"
-          class="button is-black ml-2">
-        ODŚWIEŻ
-    </span>
 </div>
