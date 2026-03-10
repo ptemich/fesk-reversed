@@ -19,6 +19,14 @@
         <java.version>25</java.version>
     </properties>
 
+    <repositories>
+        <repository>
+            <id>git-ksef</id>
+            <name>git-ksef</name>
+            <url>https://maven.pkg.github.com/CIRFMF/packages</url>
+        </repository>
+    </repositories>
+
     <dependencies>
 
         <dependency>
@@ -51,7 +59,7 @@
         <dependency>
             <groupId>pl.akmf.ksef-sdk</groupId>
             <artifactId>ksef-client</artifactId>
-            <version>3.0.13</version>
+            <version>3.0.19</version>
         </dependency>
 
 
