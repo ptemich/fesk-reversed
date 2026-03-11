@@ -75,17 +75,10 @@ public class IndexController {
         byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
         acardService.save(ksefNumber, content);
 
-        InvoiceOverviewDto invoice = InvoiceOverviewDto.fromKsefInvoice(ksefNumber, invoicesService.convert(content));
-        model.addAttribute("invoice", invoice);
-        //InvoicesFilter invoicesFilter = new InvoicesFilter(OffsetDateTime.now().minusDays(14), OffsetDateTime.now().plusDays(1));
-        //InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false, invoicesFilter);
-        //model.addAttribute("invoicesPackage", invoicesPackage);
-
         Set<String> acardInvoices = acardService.loadAcardList();
-        // model.addAttribute("acardInvoices", acardInvoices);
         model.addAttribute("availableLocally", acardInvoices.contains(ksefNumber));
 
-        return "invoiceRow";
+        return "downloadOrView";
     }
 
     @GetMapping("/download/xml/{ksefNumber}")

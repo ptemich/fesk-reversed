@@ -25,14 +25,4 @@ public record InvoiceOverviewDto(
         );
     }
 
-    public static InvoiceOverviewDto fromKsefInvoice(String ksefNumber, Faktura invoice) {
-        return new InvoiceOverviewDto(
-                ksefNumber,
-                invoice.getPodmiot1().getDaneIdentyfikacyjne().getNazwa(),
-                invoice.getFa().getP131().doubleValue(),
-                invoice.getFa().getP141().doubleValue(),
-                invoice.getFa().getP15().doubleValue(),
-                invoice.getFa().getP1().toGregorianCalendar().toZonedDateTime().toLocalDate()
-        );
-    }
 }

@@ -3,7 +3,7 @@
 @param InvoiceOverviewDto invoice
 @param boolean availableLocally
 
-<tr id="invoice_${invoice.ksefNumber()}">
+<tr>
     <td>${invoice.sellerName()}</td>
     <td class="has-text-centered">${invoice.issueDate().toString()}</td>
     <td class="has-text-right">${String.format("%.2f", invoice.netAmount())} zł</td>
@@ -12,17 +12,8 @@
     <td>
         ${invoice.ksefNumber()}
     </td>
-    <td class="has-text-centered">
-        @if(availableLocally)
-            <a href="/details/acard/${invoice.ksefNumber()}" target="_blank">
-                <span class="button is-success has-text-white is-size-7">POKAZ</span>
-            </a>
-        @else
-            <span hx-get="/copy/${invoice.ksefNumber()}"
-                  hx-target="#invoice_${invoice.ksefNumber()}"
-                  hx-swap="outerHTML"
-                  class="button is-black is-size-7">POBIERZ</span>
-        @endif
+    <td class="has-text-centered" id="tr_${invoice.ksefNumber()}">
+        @template.downloadOrView(availableLocally = availableLocally, ksefNumber = invoice.ksefNumber())
     </td>
 
     <td class="has-text-centered">
