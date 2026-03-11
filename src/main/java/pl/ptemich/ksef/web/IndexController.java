@@ -14,6 +14,7 @@ import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import pl.ptemich.ksef.acard.AcardService;
 import pl.ptemich.ksef.invoices.InvoicesService;
 import pl.ptemich.ksef.ksef.AuthorizedKsefService;
+import pl.ptemich.ksef.ksef.InvoiceOverviewDto;
 import pl.ptemich.ksef.ksef.InvoicesFilter;
 import pl.ptemich.ksef.ksef.InvoicesPackage;
 import pl.ptemich.ksef.localconf.LocalConfig;
@@ -74,14 +75,17 @@ public class IndexController {
         byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
         acardService.save(ksefNumber, content);
 
-        InvoicesFilter invoicesFilter = new InvoicesFilter(OffsetDateTime.now().minusDays(14), OffsetDateTime.now().plusDays(1));
-        InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false, invoicesFilter);
-        model.addAttribute("invoicesPackage", invoicesPackage);
+        InvoiceOverviewDto invoice = InvoiceOverviewDto.fromKsefInvoice(ksefNumber, invoicesService.convert(content));
+        model.addAttribute("invoice", invoice);
+        //InvoicesFilter invoicesFilter = new InvoicesFilter(OffsetDateTime.now().minusDays(14), OffsetDateTime.now().plusDays(1));
+        //InvoicesPackage invoicesPackage = authorizedKsefService.loadInvoices(false, invoicesFilter);
+        //model.addAttribute("invoicesPackage", invoicesPackage);
 
         Set<String> acardInvoices = acardService.loadAcardList();
-        model.addAttribute("acardInvoices", acardInvoices);
+        // model.addAttribute("acardInvoices", acardInvoices);
+        model.addAttribute("availableLocally", acardInvoices.contains(ksefNumber));
 
-        return "table";
+        return "invoiceRow";
     }
 
     @GetMapping("/download/xml/{ksefNumber}")

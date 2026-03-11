@@ -35,7 +35,7 @@ public class AuthorizedKsefService {
     private boolean initialized = false;
     private KsefToken ksefToken = null;
 
-    private List<InvoiceMetadata> invoices;
+    private List<InvoiceOverviewDto> invoices;
     private OffsetDateTime loadedOn;
 
     public AuthorizedKsefService(LocalConfigService localConfigService, KsefClientConfig ksefClientConfig) {
@@ -72,7 +72,7 @@ public class AuthorizedKsefService {
                         accessToken
                 );
 
-                invoices = queryInvoiceMetadataResponse.getInvoices();
+                List<InvoiceMetadata> ksefInvoices = queryInvoiceMetadataResponse.getInvoices();
 
                 while (queryInvoiceMetadataResponse.getHasMore()) {
                     pageOffset++;
@@ -84,8 +84,12 @@ public class AuthorizedKsefService {
                             accessToken
                     );
 
-                    invoices.addAll(queryInvoiceMetadataResponse.getInvoices());
+                    ksefInvoices.addAll(queryInvoiceMetadataResponse.getInvoices());
                 }
+
+                invoices = ksefInvoices.stream()
+                        .map(InvoiceOverviewDto::fromKsefInvoiceMetadata)
+                        .toList();
 
                 loadedOn = OffsetDateTime.now();
             } catch (ApiException e) {
