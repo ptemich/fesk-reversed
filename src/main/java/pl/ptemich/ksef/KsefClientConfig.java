@@ -12,7 +12,7 @@ import pl.akmf.ksef.sdk.api.DefaultKsefClient;
 import pl.akmf.ksef.sdk.api.DefaultLighthouseKsefClient;
 import pl.akmf.ksef.sdk.api.services.*;
 import pl.akmf.ksef.sdk.client.interfaces.*;
-import pl.ptemich.ksef.util.ExampleApiProperties;
+import pl.ptemich.ksef.util.ExtendedKsefApiProperties;
 import pl.ptemich.ksef.util.HttpClientBuilder;
 import pl.ptemich.ksef.util.HttpClientConfig;
 
@@ -20,12 +20,11 @@ import pl.ptemich.ksef.util.HttpClientConfig;
 import java.net.http.HttpClient;
 
 @Configuration
-//@RequiredArgsConstructor
 public class KsefClientConfig {
 
-    private final ExampleApiProperties apiProperties;
+    private final ExtendedKsefApiProperties apiProperties;
 
-    public KsefClientConfig(ExampleApiProperties apiProperties) {
+    public KsefClientConfig(ExtendedKsefApiProperties apiProperties) {
         this.apiProperties = apiProperties;
     }
 

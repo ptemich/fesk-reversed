@@ -1,4 +1,4 @@
-package pl.ptemich.ksef.acard;
+package pl.ptemich.ksef.local;
 
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
@@ -19,42 +19,41 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 @Service
-public class AcardService {
+public class DiskOperationsService {
 
-    private static final Logger log = LoggerFactory.getLogger(AcardService.class);
+    private static final Logger log = LoggerFactory.getLogger(DiskOperationsService.class);
 
     private final LocalConfigService localConfigService;
 
-    public AcardService(LocalConfigService localConfigService) {
+    public DiskOperationsService(LocalConfigService localConfigService) {
         this.localConfigService = localConfigService;
     }
 
-    public Set<String> loadAcardList() {
+    public Set<String> listLocalInvoices(InvoiceSource source) {
         LocalConfig localConfig = localConfigService.loadFromDisk();
+        Path folderPath = Paths.get(resolveFolderPath(localConfig, source));
+        Set<String> invoiceXmls = new HashSet<>();
 
-        Path exportPath = Paths.get(localConfig.getExportPath());
-        Set<String> inviceXmls = new HashSet<>();
-
-        try (Stream<Path> stream = Files.list(exportPath)) {
+        try (Stream<Path> stream = Files.list(folderPath)) {
             stream.filter(file -> !Files.isDirectory(file))
                     .map(Path::getFileName)
                     .map(Path::toString)
                     //.map(StringUtils::upperCase)
                     .filter(path -> path.endsWith(".xml"))
                     .map(fileName -> StringUtils.substringBefore(fileName,".xml"))
-                    .forEach(inviceXmls::add);
+                    .forEach(invoiceXmls::add);
         } catch (Exception e) {
             e.printStackTrace();
         }
 
-        return inviceXmls;
+        return invoiceXmls;
     }
 
-    public void save(String ksefNumber, byte[] xmlContent) {
+    public void saveToDisk(String invoiceNumber, byte[] xmlContent) {
         try {
             LocalConfig localConfig = localConfigService.loadFromDisk();
-            File acardDirectory = new File(localConfig.getExportPath());
-            File outputFile = new File(acardDirectory, ksefNumber + ".xml");
+            File localDirectory = new File(localConfig.getReceivedInvoicesPath());
+            File outputFile = new File(localDirectory, invoiceNumber + ".xml");
             outputFile.createNewFile();
             FileOutputStream outputStream = new FileOutputStream(outputFile);
             outputStream.write(xmlContent);
@@ -69,15 +68,19 @@ public class AcardService {
         }
     }
 
-    public byte[] load(String ksefNumber) {
+    public byte[] loadFromDisk(InvoiceSource source, String invoiceNumber) {
         LocalConfig localConfig = localConfigService.loadFromDisk();
-
-        Path path = Paths.get(localConfig.getExportPath() + "/" + ksefNumber +  ".xml");
+        String folderPath = resolveFolderPath(localConfig, source);
+        Path path = Paths.get(folderPath + "/" + invoiceNumber +  ".xml");
         try {
             byte[] xmlBytes = Files.readAllBytes(path);
             return xmlBytes;
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String resolveFolderPath(LocalConfig localConfig, InvoiceSource source) {
+        return source == InvoiceSource.RECEIVED ? localConfig.getReceivedInvoicesPath() : localConfig.getGeneratedInvoicesPath();
     }
 }

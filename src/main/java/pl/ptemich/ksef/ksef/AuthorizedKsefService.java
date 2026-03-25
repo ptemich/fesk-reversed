@@ -5,19 +5,32 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.akmf.ksef.sdk.api.DefaultKsefClient;
 import pl.akmf.ksef.sdk.api.builders.auth.AuthKsefTokenRequestBuilder;
+import pl.akmf.ksef.sdk.api.builders.batch.OpenBatchSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.builders.invoices.InvoiceQueryFiltersBuilder;
+import pl.akmf.ksef.sdk.api.builders.session.OpenOnlineSessionRequestBuilder;
+import pl.akmf.ksef.sdk.api.builders.session.SendInvoiceOnlineSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.services.DefaultCryptographyService;
 import pl.akmf.ksef.sdk.client.model.ApiException;
+import pl.akmf.ksef.sdk.client.model.UpoVersion;
 import pl.akmf.ksef.sdk.client.model.auth.*;
 import pl.akmf.ksef.sdk.client.model.invoice.*;
+import pl.akmf.ksef.sdk.client.model.session.*;
+import pl.akmf.ksef.sdk.client.model.session.batch.BatchPartSendingInfo;
+import pl.akmf.ksef.sdk.client.model.session.batch.OpenBatchSessionRequest;
+import pl.akmf.ksef.sdk.client.model.session.online.OpenOnlineSessionRequest;
+import pl.akmf.ksef.sdk.client.model.session.online.OpenOnlineSessionResponse;
+import pl.akmf.ksef.sdk.client.model.session.online.SendInvoiceOnlineSessionRequest;
+import pl.akmf.ksef.sdk.client.model.session.online.SendInvoiceResponse;
 import pl.akmf.ksef.sdk.client.model.util.SortOrder;
 import pl.ptemich.ksef.KsefClientConfig;
 import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+
 
 @Service
 public class AuthorizedKsefService {
@@ -35,7 +48,8 @@ public class AuthorizedKsefService {
     private boolean initialized = false;
     private KsefToken ksefToken = null;
 
-    private List<InvoiceOverviewDto> invoices;
+    private List<InvoiceOverviewDto> receivedInvoices;
+    private List<InvoiceOverviewDto> generatedInvoices;
     private OffsetDateTime loadedOn;
 
     public AuthorizedKsefService(LocalConfigService localConfigService, KsefClientConfig ksefClientConfig) {
@@ -52,19 +66,49 @@ public class AuthorizedKsefService {
         }
     }
 
-    public InvoicesPackage loadInvoices(boolean forceRefresh, InvoicesFilter invoicesFilter) {
-        if (forceRefresh || invoices == null) {
-            String accessToken = getAccessToken();
+    public InvoicesPackage loadInvoices(
+            boolean forceRefresh,
+            KsefInvoicesFilter ksefInvoicesFilter
+    ) {
+        if (forceRefresh || loadedOn == null) {
+            //generatedInvoices = loadInvoicesOfType(invoicesFilter, InvoiceQuerySubjectType.SUBJECT1);
+            receivedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT2);
 
-            InvoiceQueryFilters filter = new InvoiceQueryFiltersBuilder()
-                    .withSubjectType(InvoiceQuerySubjectType.SUBJECT2)
-                    .withDateRange(new InvoiceQueryDateRange(InvoiceQueryDateType.INVOICING, invoicesFilter.from(), invoicesFilter.to()))
-                    .build();
+            loadedOn = OffsetDateTime.now();
+        }
 
-            try {
-                int pageOffset = 0;
+        return new InvoicesPackage(loadedOn, receivedInvoices);
+    }
 
-                QueryInvoiceMetadataResponse queryInvoiceMetadataResponse = ksefClient.queryInvoiceMetadata(
+    public List<InvoiceOverviewDto> loadInvoicesOfType(
+            KsefInvoicesFilter ksefInvoicesFilter,
+            InvoiceQuerySubjectType invoiceSubjectType
+    ) {
+
+
+        String accessToken = getAccessToken();
+
+        InvoiceQueryFilters filter = new InvoiceQueryFiltersBuilder()
+                .withSubjectType(invoiceSubjectType)
+                .withDateRange(new InvoiceQueryDateRange(InvoiceQueryDateType.INVOICING, ksefInvoicesFilter.from(), ksefInvoicesFilter.to()))
+                .build();
+
+        try {
+            int pageOffset = 0;
+
+            QueryInvoiceMetadataResponse queryInvoiceMetadataResponse = ksefClient.queryInvoiceMetadata(
+                    pageOffset,
+                    INVOICES_PAGE_SIZE,
+                    SortOrder.DESC,
+                    filter,
+                    accessToken
+            );
+
+            List<InvoiceMetadata> ksefInvoices = queryInvoiceMetadataResponse.getInvoices();
+
+            while (queryInvoiceMetadataResponse.getHasMore()) {
+                pageOffset++;
+                queryInvoiceMetadataResponse = ksefClient.queryInvoiceMetadata(
                         pageOffset,
                         INVOICES_PAGE_SIZE,
                         SortOrder.DESC,
@@ -72,33 +116,106 @@ public class AuthorizedKsefService {
                         accessToken
                 );
 
-                List<InvoiceMetadata> ksefInvoices = queryInvoiceMetadataResponse.getInvoices();
-
-                while (queryInvoiceMetadataResponse.getHasMore()) {
-                    pageOffset++;
-                    queryInvoiceMetadataResponse = ksefClient.queryInvoiceMetadata(
-                            pageOffset,
-                            INVOICES_PAGE_SIZE,
-                            SortOrder.DESC,
-                            filter,
-                            accessToken
-                    );
-
-                    ksefInvoices.addAll(queryInvoiceMetadataResponse.getInvoices());
-                }
-
-                invoices = ksefInvoices.stream()
-                        .map(InvoiceOverviewDto::fromKsefInvoiceMetadata)
-                        .toList();
-
-                loadedOn = OffsetDateTime.now();
-            } catch (ApiException e) {
-                log.error("Failed to fetch invoices", e);
-                throw new RuntimeException(e);
+                ksefInvoices.addAll(queryInvoiceMetadataResponse.getInvoices());
             }
-        }
 
-        return new InvoicesPackage(loadedOn, invoices);
+            var invoices = ksefInvoices.stream()
+                    .map(InvoiceOverviewDto::fromKsefInvoiceMetadata)
+                    .toList();
+
+            return invoices;
+
+        } catch (ApiException e) {
+            log.error("Failed to fetch invoices", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    public void sendInvoice(byte[] invoiceContent) {
+        try {
+            UpoVersion upoVersion = UpoVersion.UPO_4_3;
+            String accessToken = getAccessToken();
+
+            EncryptionData encryptionData = cryptographyService.getEncryptionData();
+
+            String sessionReferenceNumber = openOnlineSession(
+                    encryptionData,
+                    SystemCode.FA_3,
+                    SchemaVersion.VERSION_1_0E,
+                    SessionValue.FA,
+                    accessToken
+            );
+
+            byte[] encryptedInvoice = cryptographyService.encryptBytesWithAES256(
+                    invoiceContent,
+                    encryptionData.cipherKey(),
+                    encryptionData.cipherIv()
+            );
+
+            FileMetadata invoiceMetadata = cryptographyService.getMetaData(invoiceContent);
+            FileMetadata encryptedInvoiceMetadata = cryptographyService.getMetaData(encryptedInvoice);
+
+            SendInvoiceOnlineSessionRequest sendInvoiceOnlineSessionRequest = new SendInvoiceOnlineSessionRequestBuilder()
+                    .withInvoiceHash(invoiceMetadata.getHashSHA())
+                    .withInvoiceSize(invoiceMetadata.getFileSize())
+                    .withEncryptedInvoiceHash(encryptedInvoiceMetadata.getHashSHA())
+                    .withEncryptedInvoiceSize(encryptedInvoiceMetadata.getFileSize())
+                    .withEncryptedInvoiceContent(Base64.getEncoder().encodeToString(encryptedInvoice))
+                    .build();
+
+            SendInvoiceResponse sendInvoiceResponse = ksefClient.onlineSessionSendInvoice(
+                    sessionReferenceNumber,
+                    sendInvoiceOnlineSessionRequest,
+                    accessToken
+            );
+
+            SessionInvoiceStatusResponse sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber(), accessToken);
+
+//            await().atMost(30, SECONDS)
+//                    .pollInterval(2, SECONDS)
+//                    .until(() -> {
+//                        SessionStatusResponse response = ksefClient.getSessionStatus(referenceNumber, accessToken);
+//                        return response.getStatus().getCode() == expectedStatusCode;
+//                    });
+
+
+            sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber(), accessToken);
+
+            ksefClient.closeOnlineSession(sessionReferenceNumber, accessToken);
+
+            System.out.println(sendInvoiceResponse);
+            //return referenceNumber;
+        } catch (ApiException e) {
+            log.error("Failed send invoices", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private String openOnlineSession(EncryptionData encryptionData, SystemCode systemCode,
+                                     SchemaVersion schemaVersion,
+                                     SessionValue value,
+                                     String accessToken) throws ApiException {
+        OpenOnlineSessionRequest request = new OpenOnlineSessionRequestBuilder()
+                .withFormCode(new FormCode(systemCode, schemaVersion, value))
+                .withEncryptionInfo(encryptionData.encryptionInfo())
+                .build();
+
+        OpenOnlineSessionResponse openOnlineSessionResponse = ksefClient.openOnlineSession(request, UpoVersion.UPO_4_3, accessToken);
+        //Assertions.assertNotNull(openOnlineSessionResponse);
+        //Assertions.assertNotNull(openOnlineSessionResponse.getReferenceNumber());
+        return openOnlineSessionResponse.getReferenceNumber();
+    }
+
+    private boolean isInvoicesInSessionProcessed(String sessionReferenceNumber, String accessToken) {
+        try {
+            SessionStatusResponse statusResponse = ksefClient.getSessionStatus(sessionReferenceNumber, accessToken);
+            return statusResponse != null &&
+                    statusResponse.getSuccessfulInvoiceCount() != null &&
+                    statusResponse.getSuccessfulInvoiceCount() > 0;
+        } catch (Exception e) {
+            //Assertions.fail(e.getMessage());
+        }
+        return false;
     }
 
     public byte[] loadInvoiceXml(String ksefNumber) {
@@ -174,6 +291,49 @@ public class AuthorizedKsefService {
             log.error("Failed to fetch invoices", e);
             throw new RuntimeException(e);
         }
+    }
+
+
+
+
+
+
+    private List<BatchPartSendingInfo> encryptZipParts(List<byte[]> zipParts, byte[] cipherKey, byte[] cipherIv) {
+        List<BatchPartSendingInfo> encryptedZipParts = new ArrayList<>();
+        for (int i = 0; i < zipParts.size(); i++) {
+            byte[] encryptedZipPart = cryptographyService.encryptBytesWithAES256(
+                    zipParts.get(i),
+                    cipherKey,
+                    cipherIv
+            );
+            FileMetadata zipPartMetadata = cryptographyService.getMetaData(encryptedZipPart);
+            encryptedZipParts.add(new BatchPartSendingInfo(encryptedZipPart, zipPartMetadata, (i + 1)));
+        }
+        return encryptedZipParts;
+    }
+
+    private OpenBatchSessionRequest buildOpenBatchSessionRequest(
+            FileMetadata zipMetadata,
+            List<BatchPartSendingInfo> encryptedZipParts,
+            EncryptionData encryptionData
+    ) {
+        OpenBatchSessionRequestBuilder builder = OpenBatchSessionRequestBuilder.create()
+                .withFormCode(SystemCode.FA_2, SchemaVersion.VERSION_1_0E, SessionValue.FA)
+                .withOfflineMode(false)
+                .withBatchFile(zipMetadata.getFileSize(), zipMetadata.getHashSHA());
+
+        for (int i = 0; i < encryptedZipParts.size(); i++) {
+            BatchPartSendingInfo part = encryptedZipParts.get(i);
+            builder = builder.addBatchFilePart(i + 1,
+                    part.getMetadata().getFileSize(), part.getMetadata().getHashSHA());
+        }
+
+        return builder.endBatchFile()
+                .withEncryption(
+                        encryptionData.encryptionInfo().getEncryptedSymmetricKey(),
+                        encryptionData.encryptionInfo().getInitializationVector()
+                )
+                .build();
     }
 
 }

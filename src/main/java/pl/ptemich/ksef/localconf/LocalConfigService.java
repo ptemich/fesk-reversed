@@ -3,6 +3,7 @@ package pl.ptemich.ksef.localconf;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
@@ -12,6 +13,7 @@ import java.io.IOException;
 @Service
 public class LocalConfigService {
 
+    @Value("${localConfigFileName}")
     private String configFileName = "settings.json";
 
     public LocalConfig loadFromDisk() {

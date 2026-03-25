@@ -1,5 +1,6 @@
 {
   "nip" : "",
   "ksefToken" : "",
-  "exportPath" : "/"
+  "receivedInvoicesPath" : "/",
+  "generatedInvoicesPath" : "/"
 }

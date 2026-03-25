@@ -6,7 +6,8 @@ public class LocalConfig {
 
     private String nip;
     private String ksefToken;
-    private String exportPath;
+    private String receivedInvoicesPath;
+    private String generatedInvoicesPath;
 
     public String getNip() {
         return nip;
@@ -24,11 +25,19 @@ public class LocalConfig {
         this.ksefToken = ksefToken;
     }
 
-    public String getExportPath() {
-        return exportPath;
+    public String getReceivedInvoicesPath() {
+        return receivedInvoicesPath;
     }
 
-    public void setExportPath(String exportPath) {
-        this.exportPath = exportPath;
+    public void setReceivedInvoicesPath(String receivedInvoicesPath) {
+        this.receivedInvoicesPath = receivedInvoicesPath;
+    }
+
+    public String getGeneratedInvoicesPath() {
+        return generatedInvoicesPath;
+    }
+
+    public void setGeneratedInvoicesPath(String generatedInvoicesPath) {
+        this.generatedInvoicesPath = generatedInvoicesPath;
     }
 }

@@ -1,4 +1,4 @@
-package pl.ptemich.ksef.invoices;
+package pl.ptemich.ksef.util;
 
 import jakarta.xml.bind.JAXBContext;
 import jakarta.xml.bind.JAXBException;
@@ -11,22 +11,18 @@ import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 
-@Service
-public class InvoicesService {
+public class InvoicesConverter {
 
-    private static final Logger log = LoggerFactory.getLogger(InvoicesService.class);
+    private static final Logger log = LoggerFactory.getLogger(InvoicesConverter.class);
 
-    public Faktura convert(byte[] xmlBytes) {
+    public static Faktura convert(byte[] xmlBytes) {
         try {
             JAXBContext context = JAXBContext.newInstance(Faktura.class);
             Unmarshaller unmarshaller = context.createUnmarshaller();
             try (ByteArrayInputStream input = new ByteArrayInputStream(xmlBytes)) {
                 return (Faktura) unmarshaller.unmarshal(input);
             }
-        } catch (IOException e) {
-            log.error("Failed to convert invoice", e);
-            throw new RuntimeException(e);
-        } catch (JAXBException e) {
+        } catch (IOException | JAXBException e) {
             log.error("Failed to convert invoice", e);
             throw new RuntimeException(e);
         }
