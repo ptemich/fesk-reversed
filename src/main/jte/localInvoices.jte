@@ -24,6 +24,11 @@
     <h1 class="is-size-1 pl-2 has-text-weight-bold">AUTOMOBIL - KSEF</h1>
 </div>
 
+<a href="/">
+    <span class="button is-black ml-2">
+    POBIERANIE
+    </span>
+</a>
 
 @template.localInvoicesTable(localInvoices = localInvoices)
 

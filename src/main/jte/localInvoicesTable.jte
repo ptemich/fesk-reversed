@@ -21,7 +21,10 @@
         <tr>
             <th>Sprzedawca</th>
             <th>Nabywca</th>
+            <th>Nr fakt.</th>
+            <th>Data wystawienia</th>
             <th>KSEF</th>
+            <th>Plik</th>
         </tr>
         </thead>
         @for(LocalInvoice invoice : localInvoices)

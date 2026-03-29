@@ -5,19 +5,15 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import pl.akmf.ksef.sdk.api.DefaultKsefClient;
 import pl.akmf.ksef.sdk.api.builders.auth.AuthKsefTokenRequestBuilder;
-import pl.akmf.ksef.sdk.api.builders.batch.OpenBatchSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.builders.invoices.InvoiceQueryFiltersBuilder;
 import pl.akmf.ksef.sdk.api.builders.session.OpenOnlineSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.builders.session.SendInvoiceOnlineSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.services.DefaultCryptographyService;
 import pl.akmf.ksef.sdk.client.model.ApiException;
-import pl.akmf.ksef.sdk.client.model.StatusInfo;
 import pl.akmf.ksef.sdk.client.model.UpoVersion;
 import pl.akmf.ksef.sdk.client.model.auth.*;
 import pl.akmf.ksef.sdk.client.model.invoice.*;
 import pl.akmf.ksef.sdk.client.model.session.*;
-import pl.akmf.ksef.sdk.client.model.session.batch.BatchPartSendingInfo;
-import pl.akmf.ksef.sdk.client.model.session.batch.OpenBatchSessionRequest;
 import pl.akmf.ksef.sdk.client.model.session.online.OpenOnlineSessionRequest;
 import pl.akmf.ksef.sdk.client.model.session.online.OpenOnlineSessionResponse;
 import pl.akmf.ksef.sdk.client.model.session.online.SendInvoiceOnlineSessionRequest;
@@ -30,8 +26,8 @@ import pl.ptemich.ksef.localconf.LocalConfigService;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
+import java.util.Comparator;
 import java.util.List;
-import java.util.Optional;
 
 
 @Service
@@ -50,8 +46,7 @@ public class AuthorizedKsefService {
     private boolean initialized = false;
     private KsefToken ksefToken = null;
 
-    private List<InvoiceOverviewDto> receivedInvoices;
-    private List<InvoiceOverviewDto> generatedInvoices;
+    private List<InvoiceOverviewDto> invoices = new ArrayList<>();
     private OffsetDateTime loadedOn;
 
     public AuthorizedKsefService(LocalConfigService localConfigService, KsefClientConfig ksefClientConfig) {
@@ -73,21 +68,26 @@ public class AuthorizedKsefService {
             KsefInvoicesFilter ksefInvoicesFilter
     ) {
         if (forceRefresh || loadedOn == null) {
-            //generatedInvoices = loadInvoicesOfType(invoicesFilter, InvoiceQuerySubjectType.SUBJECT1);
-            receivedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT2);
+            invoices.clear();
+
+            List<InvoiceOverviewDto> receivedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT2);
+            invoices.addAll(receivedInvoices);
+
+            List<InvoiceOverviewDto> generatedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT1);
+            invoices.addAll(generatedInvoices);
+
+            invoices.sort(Comparator.comparing(InvoiceOverviewDto::issueDate).reversed());
 
             loadedOn = OffsetDateTime.now();
         }
 
-        return new InvoicesPackage(loadedOn, receivedInvoices);
+        return new InvoicesPackage(loadedOn, invoices);
     }
 
     public List<InvoiceOverviewDto> loadInvoicesOfType(
             KsefInvoicesFilter ksefInvoicesFilter,
             InvoiceQuerySubjectType invoiceSubjectType
     ) {
-
-
         String accessToken = getAccessToken();
 
         InvoiceQueryFilters filter = new InvoiceQueryFiltersBuilder()
@@ -171,7 +171,7 @@ public class AuthorizedKsefService {
                     accessToken
             );
 
-            KsefUploadResultDto ksefUploadResultDto = waitAndVeify(accessToken, sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber());
+            KsefUploadResultDto ksefUploadResultDto = waitAndVerify(accessToken, sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber());
             ksefClient.closeOnlineSession(sessionReferenceNumber, accessToken);
 
             return ksefUploadResultDto;
@@ -181,16 +181,20 @@ public class AuthorizedKsefService {
         }
     }
 
-    private KsefUploadResultDto waitAndVeify(String accessToken, String sessionReferenceNumber, String invoiceReferenceNumber) throws ApiException {
-        StatusInfo status;
-
+    private KsefUploadResultDto waitAndVerify(String accessToken, String sessionReferenceNumber, String invoiceReferenceNumber) throws ApiException {
+        SessionInvoiceStatusResponse sessionInvoiceStatus;
         do {
             exceptionSafeWait(10000);
-            SessionInvoiceStatusResponse sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, invoiceReferenceNumber, accessToken);
-            status = sessionInvoiceStatus.getStatus();
-        } while (status.getCode().equals(ProcessingStatusCodes.PROCESSING));
+            sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, invoiceReferenceNumber, accessToken);
+        } while (sessionInvoiceStatus.getStatus().getCode().equals(ProcessingStatusCodes.PROCESSING));
 
-        return new KsefUploadResultDto(null, status.getCode(), status.getDescription());
+        return new KsefUploadResultDto(
+                sessionInvoiceStatus.getInvoiceNumber(),
+                sessionInvoiceStatus.getKsefNumber(),
+                sessionInvoiceStatus.getUpoDownloadUrl(),
+                sessionInvoiceStatus.getStatus().getCode(),
+                sessionInvoiceStatus.getStatus().getDescription()
+        );
     }
 
     private void exceptionSafeWait(int timeMs) {
@@ -211,21 +215,7 @@ public class AuthorizedKsefService {
                 .build();
 
         OpenOnlineSessionResponse openOnlineSessionResponse = ksefClient.openOnlineSession(request, UpoVersion.UPO_4_3, accessToken);
-        //Assertions.assertNotNull(openOnlineSessionResponse);
-        //Assertions.assertNotNull(openOnlineSessionResponse.getReferenceNumber());
         return openOnlineSessionResponse.getReferenceNumber();
-    }
-
-    private boolean isInvoicesInSessionProcessed(String sessionReferenceNumber, String accessToken) {
-        try {
-            SessionStatusResponse statusResponse = ksefClient.getSessionStatus(sessionReferenceNumber, accessToken);
-            return statusResponse != null &&
-                    statusResponse.getSuccessfulInvoiceCount() != null &&
-                    statusResponse.getSuccessfulInvoiceCount() > 0;
-        } catch (Exception e) {
-            //Assertions.fail(e.getMessage());
-        }
-        return false;
     }
 
     public byte[] loadInvoiceXml(String ksefNumber) {
@@ -301,49 +291,6 @@ public class AuthorizedKsefService {
             log.error("Failed to fetch invoices", e);
             throw new RuntimeException(e);
         }
-    }
-
-
-
-
-
-
-    private List<BatchPartSendingInfo> encryptZipParts(List<byte[]> zipParts, byte[] cipherKey, byte[] cipherIv) {
-        List<BatchPartSendingInfo> encryptedZipParts = new ArrayList<>();
-        for (int i = 0; i < zipParts.size(); i++) {
-            byte[] encryptedZipPart = cryptographyService.encryptBytesWithAES256(
-                    zipParts.get(i),
-                    cipherKey,
-                    cipherIv
-            );
-            FileMetadata zipPartMetadata = cryptographyService.getMetaData(encryptedZipPart);
-            encryptedZipParts.add(new BatchPartSendingInfo(encryptedZipPart, zipPartMetadata, (i + 1)));
-        }
-        return encryptedZipParts;
-    }
-
-    private OpenBatchSessionRequest buildOpenBatchSessionRequest(
-            FileMetadata zipMetadata,
-            List<BatchPartSendingInfo> encryptedZipParts,
-            EncryptionData encryptionData
-    ) {
-        OpenBatchSessionRequestBuilder builder = OpenBatchSessionRequestBuilder.create()
-                .withFormCode(SystemCode.FA_2, SchemaVersion.VERSION_1_0E, SessionValue.FA)
-                .withOfflineMode(false)
-                .withBatchFile(zipMetadata.getFileSize(), zipMetadata.getHashSHA());
-
-        for (int i = 0; i < encryptedZipParts.size(); i++) {
-            BatchPartSendingInfo part = encryptedZipParts.get(i);
-            builder = builder.addBatchFilePart(i + 1,
-                    part.getMetadata().getFileSize(), part.getMetadata().getHashSHA());
-        }
-
-        return builder.endBatchFile()
-                .withEncryption(
-                        encryptionData.encryptionInfo().getEncryptedSymmetricKey(),
-                        encryptionData.encryptionInfo().getInitializationVector()
-                )
-                .build();
     }
 
 }

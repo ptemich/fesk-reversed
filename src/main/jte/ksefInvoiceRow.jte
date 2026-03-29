@@ -5,6 +5,7 @@
 
 <tr>
     <td>${invoice.sellerName()}</td>
+    <td>${invoice.buyerName()}</td>
     <td class="has-text-centered">${invoice.issueDate().toString()}</td>
     <td class="has-text-right">${String.format("%.2f", invoice.netAmount())} zł</td>
     <td class="has-text-right">${String.format("%.2f", invoice.vatAmount())} zł</td>

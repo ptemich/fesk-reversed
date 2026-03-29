@@ -3,21 +3,24 @@ package pl.ptemich.ksef.local;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 
+import java.time.LocalDate;
+
 @Entity
 public class LocalInvoice {
 
     @Id
     private String fileId;
+    private String invoiceNumber;
 
-    private int processingCode;
-
-    private String processingDescription;
-
-    private String ksefNumber;
-
+    // Invoice properties
     private String seller;
-
     private String buyer;
+    private LocalDate generatedOn;
+
+    // KSEF properties
+    private int processingCode;
+    private String processingDescription;
+    private String ksefNumber;
 
     public String getFileId() {
         return fileId;
@@ -65,5 +68,21 @@ public class LocalInvoice {
 
     public void setKsefNumber(String ksefNumber) {
         this.ksefNumber = ksefNumber;
+    }
+
+    public LocalDate getGeneratedOn() {
+        return generatedOn;
+    }
+
+    public void setGeneratedOn(LocalDate generatedOn) {
+        this.generatedOn = generatedOn;
+    }
+
+    public String getInvoiceNumber() {
+        return invoiceNumber;
+    }
+
+    public void setInvoiceNumber(String invoiceNumber) {
+        this.invoiceNumber = invoiceNumber;
     }
 }

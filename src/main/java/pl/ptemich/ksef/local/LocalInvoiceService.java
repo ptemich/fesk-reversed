@@ -6,10 +6,8 @@ import pl.ptemich.ksef.ksef.AuthorizedKsefService;
 import pl.ptemich.ksef.ksef.KsefUploadResultDto;
 import pl.ptemich.ksef.util.InvoicesConverter;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.time.ZoneId;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,6 +42,8 @@ public class LocalInvoiceService {
 
                     LocalInvoice localInvoice = new LocalInvoice();
                     localInvoice.setFileId(fileId);
+                    localInvoice.setInvoiceNumber(invoice.getFa().getP2());
+                    localInvoice.setGeneratedOn(invoice.getFa().getP1().toGregorianCalendar().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
                     localInvoice.setSeller(invoice.getPodmiot1().getDaneIdentyfikacyjne().getNazwa());
                     localInvoice.setBuyer(invoice.getPodmiot2().getDaneIdentyfikacyjne().getNazwa());
                     localInvoice = localInvoicesRepository.save(localInvoice);
@@ -55,6 +55,7 @@ public class LocalInvoiceService {
 
         return localInvoiceByFileId.values()
                 .stream()
+                .sorted(Comparator.comparing(LocalInvoice::getGeneratedOn).reversed())
                 .toList();
     }
 
@@ -67,6 +68,8 @@ public class LocalInvoiceService {
 
         localInvoice.setProcessingCode(ksefUploadResultDto.processingCode());
         localInvoice.setProcessingDescription(ksefUploadResultDto.processingCodeDescription());
+        localInvoice.setKsefNumber(ksefUploadResultDto.ksefNumber());
+
         localInvoice = localInvoicesRepository.save(localInvoice);
 
         return localInvoice;
