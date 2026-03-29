@@ -36,3 +36,4 @@ build/
 /settings.json
 /settings-local.json
 /jte-classes/
+/data/file-database.mv.db
