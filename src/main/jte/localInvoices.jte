@@ -25,7 +25,7 @@
 </div>
 
 <a href="/">
-    <span class="button is-black ml-2">
+    <span class="button is-link ml-2">
     POBIERANIE
     </span>
 </a>

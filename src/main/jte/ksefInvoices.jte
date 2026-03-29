@@ -26,7 +26,7 @@
 </div>
 
 <a href="/local">
-    <span class="button is-black ml-2">
+    <span class="button is-link ml-2">
     WYSYŁANIE
     </span>
 </a>

@@ -57,7 +57,7 @@ public class LocalInvoiceService {
 
         List<LocalInvoice> localInvoices = localInvoiceByFileId.values()
                 .stream()
-                .sorted(Comparator.comparing(LocalInvoice::getGeneratedOn).reversed())
+                .sorted(Comparator.comparing(LocalInvoice::getGeneratedOn).reversed().thenComparing(Comparator.comparing(LocalInvoice::getInvoiceNumber).reversed()))
                 .toList();
 
         return new LocalInvoicesPackage(OffsetDateTime.now(), localInvoices);
