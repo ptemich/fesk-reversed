@@ -20,6 +20,7 @@ import pl.akmf.ksef.sdk.client.model.session.online.SendInvoiceOnlineSessionRequ
 import pl.akmf.ksef.sdk.client.model.session.online.SendInvoiceResponse;
 import pl.akmf.ksef.sdk.client.model.util.SortOrder;
 import pl.ptemich.ksef.KsefClientConfig;
+import pl.ptemich.ksef.local.InvoiceSource;
 import pl.ptemich.ksef.localconf.LocalConfig;
 import pl.ptemich.ksef.localconf.LocalConfigService;
 
@@ -63,17 +64,17 @@ public class AuthorizedKsefService {
         }
     }
 
-    public InvoicesPackage loadInvoices(
+    public KsefInvoicesPackage loadInvoices(
             boolean forceRefresh,
             KsefInvoicesFilter ksefInvoicesFilter
     ) {
         if (forceRefresh || loadedOn == null) {
             invoices.clear();
 
-            List<InvoiceOverviewDto> receivedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT2);
+            List<InvoiceOverviewDto> receivedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT2, InvoiceSource.KSEF_TO_LOCAL);
             invoices.addAll(receivedInvoices);
 
-            List<InvoiceOverviewDto> generatedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT1);
+            List<InvoiceOverviewDto> generatedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT1, InvoiceSource.KSEF_TO_LOCAL_PROCESSED_COPY);
             invoices.addAll(generatedInvoices);
 
             invoices.sort(Comparator.comparing(InvoiceOverviewDto::issueDate).reversed());
@@ -81,12 +82,13 @@ public class AuthorizedKsefService {
             loadedOn = OffsetDateTime.now();
         }
 
-        return new InvoicesPackage(loadedOn, invoices);
+        return new KsefInvoicesPackage(loadedOn, invoices);
     }
 
     public List<InvoiceOverviewDto> loadInvoicesOfType(
             KsefInvoicesFilter ksefInvoicesFilter,
-            InvoiceQuerySubjectType invoiceSubjectType
+            InvoiceQuerySubjectType invoiceSubjectType,
+            InvoiceSource invoiceSource
     ) {
         String accessToken = getAccessToken();
 
@@ -122,7 +124,7 @@ public class AuthorizedKsefService {
             }
 
             var invoices = ksefInvoices.stream()
-                    .map(InvoiceOverviewDto::fromKsefInvoiceMetadata)
+                    .map(invoice -> InvoiceOverviewDto.fromKsefInvoiceMetadata(invoice, invoiceSource))
                     .toList();
 
             return invoices;

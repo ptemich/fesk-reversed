@@ -1,20 +1,20 @@
-
 @import pl.ptemich.ksef.local.LocalInvoice
-@import java.util.List
+@import pl.ptemich.ksef.local.LocalInvoicesPackage
+@import java.util.Set
 
-@param List<LocalInvoice> localInvoices
-
+@param LocalInvoicesPackage invoicesPackage
+@param Set<String> downloadedInvoices
 
 <div id="invoices">
-<%--    <div>--%>
-<%--        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>--%>
-<%--        <span hx-get="/reload"--%>
-<%--              hx-target="#invoices"--%>
-<%--              hx-swap="outerHTML"--%>
-<%--              class="button is-black ml-2">--%>
-<%--            ODŚWIEŻ--%>
-<%--        </span>--%>
-<%--    </div>--%>
+    <div>
+        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
+        <span hx-get="/reloadLocal"
+              hx-target="#invoices"
+              hx-swap="outerHTML"
+              class="button is-black ml-2">
+            ODŚWIEŻ
+        </span>
+    </div>
 
     <table class="table is-striped is-fullwidth">
         <thead>
@@ -27,8 +27,8 @@
             <th>Plik</th>
         </tr>
         </thead>
-        @for(LocalInvoice invoice : localInvoices)
-            @template.localInvoiceRow(invoice = invoice)
+        @for(LocalInvoice invoice : invoicesPackage.invoices())
+            @template.localInvoiceRow(invoice = invoice, availableLocally = downloadedInvoices.contains(invoice.getKsefNumber()))
         @endfor
     </table>
 

@@ -1,10 +1,10 @@
-@import pl.ptemich.ksef.local.LocalInvoice
+@import pl.ptemich.ksef.local.LocalInvoicesPackage
 @import pl.ptemich.ksef.localconf.LocalConfig
-@import pl.ptemich.ksef.ksef.InvoicesPackage
-@import java.util.List
+@import java.util.Set
 
 @param LocalConfig localConfig
-@param List<LocalInvoice> localInvoices
+@param LocalInvoicesPackage invoicesPackage
+@param Set<String> downloadedInvoices
 
 <!DOCTYPE html>
 <html lang="en">
@@ -30,7 +30,7 @@
     </span>
 </a>
 
-@template.localInvoicesTable(localInvoices = localInvoices)
+@template.localInvoicesTable(invoicesPackage = invoicesPackage, downloadedInvoices = downloadedInvoices)
 
 </body>
 </html>

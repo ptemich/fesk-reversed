@@ -6,6 +6,8 @@ import pl.ptemich.ksef.ksef.AuthorizedKsefService;
 import pl.ptemich.ksef.ksef.KsefUploadResultDto;
 import pl.ptemich.ksef.util.InvoicesConverter;
 
+import java.time.LocalDateTime;
+import java.time.OffsetDateTime;
 import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
@@ -29,15 +31,15 @@ public class LocalInvoiceService {
         this.authorizedKsefService = authorizedKsefService;
     }
 
-    public List<LocalInvoice> loadInvoices(LocalInvoicesFilter filter) {
-        Set<String> localInvoiceFileIds = diskOperationsService.listLocalInvoices(InvoiceSource.GENERATED);
+    public LocalInvoicesPackage loadInvoices(LocalInvoicesFilter filter) {
+        Set<String> localInvoiceFileIds = diskOperationsService.listLocalInvoices(InvoiceSource.LOCAL_TO_KSEF);
         Map<String, LocalInvoice> localInvoiceByFileId = localInvoicesRepository.findAllById(localInvoiceFileIds).stream()
                 .collect(Collectors.toMap(LocalInvoice::getFileId, Function.identity()));
 
         List<LocalInvoice> addedInvoices = localInvoiceFileIds.stream()
                 .filter(Predicate.not(localInvoiceByFileId::containsKey))
                 .map(fileId -> {
-                    byte[] invoiceContent = diskOperationsService.loadFromDisk(InvoiceSource.GENERATED, fileId);
+                    byte[] invoiceContent = diskOperationsService.loadFromDisk(InvoiceSource.LOCAL_TO_KSEF, fileId);
                     Faktura invoice = InvoicesConverter.convert(invoiceContent);
 
                     LocalInvoice localInvoice = new LocalInvoice();
@@ -53,17 +55,19 @@ public class LocalInvoiceService {
 
         addedInvoices.forEach(localInvoice -> localInvoiceByFileId.put(localInvoice.getFileId(), localInvoice));
 
-        return localInvoiceByFileId.values()
+        List<LocalInvoice> localInvoices = localInvoiceByFileId.values()
                 .stream()
                 .sorted(Comparator.comparing(LocalInvoice::getGeneratedOn).reversed())
                 .toList();
+
+        return new LocalInvoicesPackage(OffsetDateTime.now(), localInvoices);
     }
 
     public LocalInvoice sendToKsef(String fileId) {
         LocalInvoice localInvoice = localInvoicesRepository.findById(fileId)
                 .orElseThrow(() -> new RuntimeException("Ksef upload failed"));
 
-        byte[] invoiceContent = diskOperationsService.loadFromDisk(InvoiceSource.GENERATED, fileId);
+        byte[] invoiceContent = diskOperationsService.loadFromDisk(InvoiceSource.LOCAL_TO_KSEF, fileId);
         KsefUploadResultDto ksefUploadResultDto = authorizedKsefService.sendInvoice(invoiceContent);
 
         localInvoice.setProcessingCode(ksefUploadResultDto.processingCode());
@@ -71,6 +75,12 @@ public class LocalInvoiceService {
         localInvoice.setKsefNumber(ksefUploadResultDto.ksefNumber());
 
         localInvoice = localInvoicesRepository.save(localInvoice);
+
+        if (ksefUploadResultDto.ksefNumber() != null) {
+            byte[] bytes = authorizedKsefService.loadInvoiceXml(ksefUploadResultDto.ksefNumber());
+            diskOperationsService.saveToDisk(InvoiceSource.KSEF_TO_LOCAL_PROCESSED, ksefUploadResultDto.ksefNumber(), bytes);
+            diskOperationsService.saveToDisk(InvoiceSource.KSEF_TO_LOCAL_PROCESSED_COPY, ksefUploadResultDto.ksefNumber(), bytes);
+        }
 
         return localInvoice;
     }

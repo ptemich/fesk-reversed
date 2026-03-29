@@ -49,10 +49,10 @@ public class DiskOperationsService {
         return invoiceXmls;
     }
 
-    public void saveToDisk(String invoiceNumber, byte[] xmlContent) {
+    public void saveToDisk(InvoiceSource invoiceSource, String invoiceNumber, byte[] xmlContent) {
         try {
             LocalConfig localConfig = localConfigService.loadFromDisk();
-            File localDirectory = new File(localConfig.getReceivedInvoicesPath());
+            File localDirectory = new File(resolveFolderPath(localConfig, invoiceSource));
             File outputFile = new File(localDirectory, invoiceNumber + ".xml");
             outputFile.createNewFile();
             FileOutputStream outputStream = new FileOutputStream(outputFile);
@@ -68,10 +68,10 @@ public class DiskOperationsService {
         }
     }
 
-    public byte[] loadFromDisk(InvoiceSource source, String invoiceNumber) {
+    public byte[] loadFromDisk(InvoiceSource source, String ksefNumber) {
         LocalConfig localConfig = localConfigService.loadFromDisk();
         String folderPath = resolveFolderPath(localConfig, source);
-        Path path = Paths.get(folderPath + "/" + invoiceNumber +  ".xml");
+        Path path = Paths.get(folderPath + "/" + ksefNumber +  ".xml");
         try {
             byte[] xmlBytes = Files.readAllBytes(path);
             return xmlBytes;
@@ -81,6 +81,15 @@ public class DiskOperationsService {
     }
 
     private String resolveFolderPath(LocalConfig localConfig, InvoiceSource source) {
-        return source == InvoiceSource.RECEIVED ? localConfig.getReceivedInvoicesPath() : localConfig.getGeneratedInvoicesPath();
+        return switch (source) {
+            case KSEF_TO_LOCAL:
+                yield localConfig.getKsefToLocalPath();
+            case KSEF_TO_LOCAL_PROCESSED_COPY:
+                yield localConfig.getKsefToLocalProcessedCopy();
+            case LOCAL_TO_KSEF:
+                yield localConfig.getLocalToKsefPath();
+            case KSEF_TO_LOCAL_PROCESSED:
+                yield localConfig.getKsefToLocalProcessed();
+        };
     }
 }

@@ -1,9 +1,9 @@
 @param boolean availableLocally
 @param String ksefNumber
-
+@param pl.ptemich.ksef.local.InvoiceSource invoiceSource
 
 @if(availableLocally)
-    <a href="/details/acard/${ksefNumber}" target="_blank">
+    <a href="/details/local/${ksefNumber}/${invoiceSource}" target="_blank">
         <span class="button is-success has-text-white is-size-7">POKAZ</span>
     </a>
 @else

@@ -6,6 +6,8 @@ public class ProcessingStatusCodes {
 
     public static final int DUPLICATED = 440;
 
+    public static final int SUCCESS = 200;
+
 
 //            100	Faktura przyjęta do dalszego przetwarzania	-	-
 //            150	Trwa przetwarzanie	-	-

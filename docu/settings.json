@@ -1,6 +1,8 @@
 {
   "nip" : "",
   "ksefToken" : "",
-  "receivedInvoicesPath" : "/",
-  "generatedInvoicesPath" : "/"
+  "ksefToLocalPath" : "/",
+  "localToKsefPath" : "/",
+  "ksefToLocalProcessed" : "/",
+  "ksefToLocalProcessedCopy" : "/"
 }

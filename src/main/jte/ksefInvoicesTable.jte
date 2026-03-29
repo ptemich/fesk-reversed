@@ -1,14 +1,16 @@
 @import pl.ptemich.ksef.ksef.InvoiceOverviewDto
-@import pl.ptemich.ksef.ksef.InvoicesPackage
+@import pl.ptemich.ksef.ksef.KsefInvoicesPackage
+@import pl.ptemich.ksef.local.InvoiceSource
 @import java.util.Set
 
-@param InvoicesPackage invoicesPackage
+@param KsefInvoicesPackage ksefInvoicesPackage
 @param Set<String> localInvoices
+@param Set<String> localInvoiceConfirmations
 
 
 <div id="invoices">
     <div>
-        <p class="pl-2">Pobrano ${invoicesPackage.getFormatedTime()}</p>
+        <p class="pl-2">Pobrano ${ksefInvoicesPackage.getFormatedTime()}</p>
         <span hx-get="/reload"
               hx-target="#invoices"
               hx-swap="outerHTML"
@@ -31,8 +33,11 @@
             <th class="has-text-centered">KSEF</th>
         </tr>
         </thead>
-        @for(InvoiceOverviewDto invoice : invoicesPackage.invoices())
-            @template.ksefInvoiceRow(invoice = invoice, availableLocally = localInvoices.contains(invoice.ksefNumber()))
+        @for(InvoiceOverviewDto invoice : ksefInvoicesPackage.invoices())
+            @template.ksefInvoiceRow(
+                invoice = invoice,
+                availableLocally = invoice.invoiceSource() == InvoiceSource.KSEF_TO_LOCAL ? localInvoices.contains(invoice.ksefNumber()) : localInvoiceConfirmations.contains(invoice.ksefNumber())
+            )
         @endfor
     </table>
 

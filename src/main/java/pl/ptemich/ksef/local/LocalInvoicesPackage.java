@@ -1,13 +1,14 @@
-package pl.ptemich.ksef.ksef;
+package pl.ptemich.ksef.local;
+
 
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public record InvoicesPackage(
+public record LocalInvoicesPackage(
         OffsetDateTime loadedOn,
-        List<InvoiceOverviewDto> invoices
+        List<LocalInvoice> invoices
 ) {
 
     public String getFormatedTime() {

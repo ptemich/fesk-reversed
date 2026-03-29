@@ -2,6 +2,7 @@
 @import java.time.format.DateTimeFormatter
 
 @param LocalInvoice invoice
+@param boolean availableLocally
 
 <tr>
     <td>${invoice.getSeller()}</td>
@@ -15,7 +16,7 @@
         ${dataWystawienia}
     </td>
     <td id="lcl_${invoice.getFileId()}">
-        @template.sendOrNumber(invoice = invoice)
+        @template.sendOrNumber(invoice = invoice, availableLocally = availableLocally)
     </td>
     <td>${invoice.getFileId()}</td>
 </tr>
