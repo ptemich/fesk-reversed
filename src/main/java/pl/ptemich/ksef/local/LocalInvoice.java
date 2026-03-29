@@ -9,7 +9,11 @@ public class LocalInvoice {
     @Id
     private String fileId;
 
-    private boolean exported;
+    private int processingCode;
+
+    private String processingDescription;
+
+    private String ksefNumber;
 
     private String seller;
 
@@ -39,11 +43,27 @@ public class LocalInvoice {
         this.buyer = buyer;
     }
 
-    public boolean isExported() {
-        return exported;
+    public int getProcessingCode() {
+        return processingCode;
     }
 
-    public void setExported(boolean exported) {
-        this.exported = exported;
+    public void setProcessingCode(int processingCode) {
+        this.processingCode = processingCode;
+    }
+
+    public String getProcessingDescription() {
+        return processingDescription;
+    }
+
+    public void setProcessingDescription(String processingDescription) {
+        this.processingDescription = processingDescription;
+    }
+
+    public String getKsefNumber() {
+        return ksefNumber;
+    }
+
+    public void setKsefNumber(String ksefNumber) {
+        this.ksefNumber = ksefNumber;
     }
 }

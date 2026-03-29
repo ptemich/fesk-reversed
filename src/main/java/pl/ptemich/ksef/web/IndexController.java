@@ -10,6 +10,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+import org.springframework.web.bind.annotation.PostMapping;
 import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
 import pl.ptemich.ksef.local.*;
 import pl.ptemich.ksef.util.InvoicesConverter;
@@ -118,11 +119,6 @@ public class IndexController {
 
     @GetMapping("/local")
     public String listLocalInvoices(Model model) {
-        //String invoiceNumber = "__-0316FSV-26000170";
-        //byte[] invoiceContent = diskOperationsService.loadFromDisk(InvoiceSource.GENERATED, invoiceNumber);
-        //Map<String, byte[]> invoicesContentByName = Map.of(invoiceNumber, invoiceContent);
-        //authorizedKsefService.sendInvoice(invoiceContent);
-
         LocalConfig localConfig = localConfigService.loadFromDisk();
         model.addAttribute("localConfig", localConfig);
 
@@ -137,5 +133,12 @@ public class IndexController {
         model.addAttribute("localInvoices", localInvoices);
 
         return "localInvoices";
+    }
+
+    @PostMapping("/send/{fileId}")
+    public String sendToKsef(Model model, @PathVariable String fileId) {
+        LocalInvoice localInvoice = localInvoiceService.sendToKsef(fileId);
+        model.addAttribute("invoice", localInvoice);
+        return "sendOrNumber";
     }
 }

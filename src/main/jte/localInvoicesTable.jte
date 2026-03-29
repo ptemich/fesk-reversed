@@ -21,13 +21,7 @@
         <tr>
             <th>Sprzedawca</th>
             <th>Nabywca</th>
-<%--            <th class="has-text-centered">Data wystawienia</th>--%>
-<%--            <th class="has-text-right">Netto</th>--%>
-<%--            <th class="has-text-right">Vat</th>--%>
-<%--            <th class="has-text-right">Brutto</th>--%>
-<%--            <th>Numer KSEF</th>--%>
-<%--            <th class="has-text-centered">AKORD</th>--%>
-<%--            <th class="has-text-centered">KSEF</th>--%>
+            <th>KSEF</th>
         </tr>
         </thead>
         @for(LocalInvoice invoice : localInvoices)

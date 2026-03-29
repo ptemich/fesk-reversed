@@ -28,4 +28,4 @@
 @template.ksefInvoicesTable(invoicesPackage =  invoicesPackage, localInvoices = localInvoices)
 
 </body>
-</html>>
+</html>

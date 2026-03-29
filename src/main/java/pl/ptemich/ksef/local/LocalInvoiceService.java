@@ -2,10 +2,13 @@ package pl.ptemich.ksef.local;
 
 import org.springframework.stereotype.Service;
 import pl.gov.crd.wzor._2025._06._25._13775.Faktura;
+import pl.ptemich.ksef.ksef.AuthorizedKsefService;
+import pl.ptemich.ksef.ksef.KsefUploadResultDto;
 import pl.ptemich.ksef.util.InvoicesConverter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
@@ -16,10 +19,16 @@ public class LocalInvoiceService {
 
     private final DiskOperationsService diskOperationsService;
     private final LocalInvoicesRepository localInvoicesRepository;
+    private final AuthorizedKsefService authorizedKsefService;
 
-    public LocalInvoiceService(DiskOperationsService diskOperationsService, LocalInvoicesRepository localInvoicesRepository) {
+    public LocalInvoiceService(
+            DiskOperationsService diskOperationsService,
+            LocalInvoicesRepository localInvoicesRepository,
+            AuthorizedKsefService authorizedKsefService
+    ) {
         this.diskOperationsService = diskOperationsService;
         this.localInvoicesRepository = localInvoicesRepository;
+        this.authorizedKsefService = authorizedKsefService;
     }
 
     public List<LocalInvoice> loadInvoices(LocalInvoicesFilter filter) {
@@ -49,4 +58,17 @@ public class LocalInvoiceService {
                 .toList();
     }
 
+    public LocalInvoice sendToKsef(String fileId) {
+        LocalInvoice localInvoice = localInvoicesRepository.findById(fileId)
+                .orElseThrow(() -> new RuntimeException("Ksef upload failed"));
+
+        byte[] invoiceContent = diskOperationsService.loadFromDisk(InvoiceSource.GENERATED, fileId);
+        KsefUploadResultDto ksefUploadResultDto = authorizedKsefService.sendInvoice(invoiceContent);
+
+        localInvoice.setProcessingCode(ksefUploadResultDto.processingCode());
+        localInvoice.setProcessingDescription(ksefUploadResultDto.processingCodeDescription());
+        localInvoice = localInvoicesRepository.save(localInvoice);
+
+        return localInvoice;
+    }
 }

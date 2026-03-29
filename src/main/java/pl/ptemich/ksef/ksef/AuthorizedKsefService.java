@@ -11,6 +11,7 @@ import pl.akmf.ksef.sdk.api.builders.session.OpenOnlineSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.builders.session.SendInvoiceOnlineSessionRequestBuilder;
 import pl.akmf.ksef.sdk.api.services.DefaultCryptographyService;
 import pl.akmf.ksef.sdk.client.model.ApiException;
+import pl.akmf.ksef.sdk.client.model.StatusInfo;
 import pl.akmf.ksef.sdk.client.model.UpoVersion;
 import pl.akmf.ksef.sdk.client.model.auth.*;
 import pl.akmf.ksef.sdk.client.model.invoice.*;
@@ -30,6 +31,7 @@ import java.time.OffsetDateTime;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.Optional;
 
 
 @Service
@@ -131,7 +133,7 @@ public class AuthorizedKsefService {
         }
     }
 
-    public void sendInvoice(byte[] invoiceContent) {
+    public KsefUploadResultDto sendInvoice(byte[] invoiceContent) {
         try {
             UpoVersion upoVersion = UpoVersion.UPO_4_3;
             String accessToken = getAccessToken();
@@ -169,25 +171,33 @@ public class AuthorizedKsefService {
                     accessToken
             );
 
-            SessionInvoiceStatusResponse sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber(), accessToken);
-
-//            await().atMost(30, SECONDS)
-//                    .pollInterval(2, SECONDS)
-//                    .until(() -> {
-//                        SessionStatusResponse response = ksefClient.getSessionStatus(referenceNumber, accessToken);
-//                        return response.getStatus().getCode() == expectedStatusCode;
-//                    });
-
-
-            sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber(), accessToken);
-
+            KsefUploadResultDto ksefUploadResultDto = waitAndVeify(accessToken, sessionReferenceNumber, sendInvoiceResponse.getReferenceNumber());
             ksefClient.closeOnlineSession(sessionReferenceNumber, accessToken);
 
-            System.out.println(sendInvoiceResponse);
-            //return referenceNumber;
+            return ksefUploadResultDto;
         } catch (ApiException e) {
             log.error("Failed send invoices", e);
             throw new RuntimeException(e);
+        }
+    }
+
+    private KsefUploadResultDto waitAndVeify(String accessToken, String sessionReferenceNumber, String invoiceReferenceNumber) throws ApiException {
+        StatusInfo status;
+
+        do {
+            exceptionSafeWait(10000);
+            SessionInvoiceStatusResponse sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, invoiceReferenceNumber, accessToken);
+            status = sessionInvoiceStatus.getStatus();
+        } while (status.getCode().equals(ProcessingStatusCodes.PROCESSING));
+
+        return new KsefUploadResultDto(null, status.getCode(), status.getDescription());
+    }
+
+    private void exceptionSafeWait(int timeMs) {
+        try {
+            Thread.sleep(timeMs);
+        } catch (InterruptedException e) {
+            log.error("Failed to wait for session invoice status", e);
         }
     }
 
