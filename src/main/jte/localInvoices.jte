@@ -16,6 +16,15 @@
         href="https://cdn.jsdelivr.net/npm/bulma@1.0.4/css/bulma.min.css"
 >
 <style>
+
+    span.loader {
+        display: none;
+    }
+
+    .htmx-request span.loader {
+        display: block;
+    }
+
 </style>
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
 <body>

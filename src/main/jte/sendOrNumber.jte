@@ -19,7 +19,10 @@
     <span hx-post="/send/${invoice.getFileId()}"
           hx-target="#lcl_${invoice.getFileId()}"
           hx-swap="innerHTML"
-          class="button is-black is-size-7">WYSLIJ</span>
+          hx-indicator="#lcl_${invoice.getFileId()}"
+          class="button is-black is-size-7">
+        <span class="loader mr-1"></span> WYSLIJ
+    </span>
 @endif
 
 
