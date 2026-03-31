@@ -20,15 +20,18 @@
 <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script>
 <body>
 
+
+
 <div>
     <h1 class="is-size-1 pl-2 has-text-weight-bold">AUTOMOBIL - KSEF</h1>
 </div>
 
-<a href="/">
-    <span class="button is-link ml-2">
-    POBIERANIE
-    </span>
-</a>
+<div class="tabs">
+    <ul>
+        <li><a href="/">POBIERANIE</a></li>
+        <li class="is-active"><a href="/local">WYSYŁANIE</a></li>
+    </ul>
+</div>
 
 @template.localInvoicesTable(invoicesPackage = invoicesPackage, downloadedInvoices = downloadedInvoices)
 

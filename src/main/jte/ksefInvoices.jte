@@ -25,11 +25,12 @@
     <h1 class="is-size-1 pl-2 has-text-weight-bold">AUTOMOBIL - KSEF</h1>
 </div>
 
-<a href="/local">
-    <span class="button is-link ml-2">
-    WYSYŁANIE
-    </span>
-</a>
+<div class="tabs">
+    <ul>
+        <li class="is-active"><a href="/">POBIERANIE</a></li>
+        <li><a href="/local">WYSYŁANIE</a></li>
+    </ul>
+</div>
 
 @template.ksefInvoicesTable(
     ksefInvoicesPackage = ksefInvoicesPackage,

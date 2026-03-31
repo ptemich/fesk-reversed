@@ -268,7 +268,11 @@
         </table>
     @endif
 
+    <div class="has-text-centered">
+        Dokument nie jest fakturą w rozumieniu prawa podatkowego.
+    </div>
 </div>
+
 
 </body>
 </html>

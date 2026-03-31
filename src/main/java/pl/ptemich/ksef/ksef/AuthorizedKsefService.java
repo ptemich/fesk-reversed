@@ -34,6 +34,7 @@ import java.util.List;
 @Service
 public class AuthorizedKsefService {
 
+    private final static int MAX_RETRY_COUNT = 10;
     private final static int INVOICES_PAGE_SIZE = 50; // max 250
     private static final Logger log = LoggerFactory.getLogger(AuthorizedKsefService.class);
 
@@ -185,10 +186,12 @@ public class AuthorizedKsefService {
 
     private KsefUploadResultDto waitAndVerify(String accessToken, String sessionReferenceNumber, String invoiceReferenceNumber) throws ApiException {
         SessionInvoiceStatusResponse sessionInvoiceStatus;
+        int retryCount = 0;
         do {
+            retryCount++;
             exceptionSafeWait(10000);
             sessionInvoiceStatus = ksefClient.getSessionInvoiceStatus(sessionReferenceNumber, invoiceReferenceNumber, accessToken);
-        } while (sessionInvoiceStatus.getStatus().getCode().equals(ProcessingStatusCodes.PROCESSING));
+        } while (retryCount < MAX_RETRY_COUNT && sessionInvoiceStatus.getStatus().getCode().equals(ProcessingStatusCodes.PROCESSING));
 
         return new KsefUploadResultDto(
                 sessionInvoiceStatus.getInvoiceNumber(),
@@ -272,7 +275,7 @@ public class AuthorizedKsefService {
             String tempAccessToken = signatureResponse.getAuthenticationToken().getToken();
 
             AuthStatus authStatus = ksefClient.getAuthStatus(signatureResponse.getReferenceNumber(), tempAccessToken);
-            int maxTries = 5;
+            int maxTries = MAX_RETRY_COUNT;
             while (maxTries > 0 && !authStatus.getStatus().getCode().equals(200)) {
                 maxTries--;
                 Thread.sleep(1000);
