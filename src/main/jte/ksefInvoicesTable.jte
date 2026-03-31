@@ -31,6 +31,7 @@
             <th>Numer KSEF</th>
             <th class="has-text-centered">AKORD</th>
             <th class="has-text-centered">KSEF</th>
+            <th class="has-text-centered">XML</th>
         </tr>
         </thead>
         @for(InvoiceOverviewDto invoice : ksefInvoicesPackage.invoices())
@@ -40,5 +41,9 @@
             )
         @endfor
     </table>
+
+    <div class="button is-black ml-2" onclick="Array.from(document.getElementsByClassName('hiddenByDefault')).forEach(e => e.removeAttribute('hidden'))">
+        POKAZ POTWIERDZENIA
+    </div>
 
 </div>

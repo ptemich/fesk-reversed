@@ -2,6 +2,7 @@
 @import pl.gov.crd.wzor._2025._06._25._13775.TKluczWartosc
 @import java.math.BigDecimal
 @import java.text.SimpleDateFormat
+@import java.time.ZoneId
 @import java.util.List
 
 
@@ -133,9 +134,21 @@
                     </td>
                     <td class="has-text-centered">${wierszFaktury.getP8A()}</td>
                     <td class="has-text-centered">${wierszFaktury.getP8B()}</td>
-                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP9A())}</td>
+                    <td class="has-text-right">
+                        @if(wierszFaktury.getP9A() != null)
+                            ${String.format("%.2f",wierszFaktury.getP9A())} (NETTO)
+                        @else
+                            ${String.format("%.2f",wierszFaktury.getP9B())} (BRUTTO)
+                        @endif
+                    </td>
                     <td class="has-text-right">${wierszFaktury.getP12()}%</td>
-                    <td class="has-text-right">${String.format("%.2f",wierszFaktury.getP11())}</td>
+                    <td class="has-text-right">
+                        @if(wierszFaktury.getP11() != null)
+                            ${String.format("%.2f",wierszFaktury.getP11())} (NETTO)
+                        @else
+                            ${String.format("%.2f",wierszFaktury.getP11A())} (BRUTTO)
+                        @endif
+                    </td>
                 </tr>
             @endfor
         </tbody>
@@ -192,6 +205,28 @@
             </tr>
         </tbody>
     </table>
+
+    @if(invoice.getFa().getPlatnosc().getZaplataCzesciowa() != null && !invoice.getFa().getPlatnosc().getZaplataCzesciowa().isEmpty())
+        <table class="table mx-auto">
+            <thead>
+                <tr>
+                    <th colspan="2">Płatność częściowa</th>
+                </tr>
+                <tr>
+                    <th>Kwota</th>
+                    <th>Data</th>
+                </tr>
+            </thead>
+            <tbody>
+            @for(var zaplataCzesciowa : invoice.getFa().getPlatnosc().getZaplataCzesciowa())
+                <tr>
+                    <td>${zaplataCzesciowa.getKwotaZaplatyCzesciowej()} zł</td>
+                    <td>${zaplataCzesciowa.getDataZaplatyCzesciowej().toString()}</td>
+                </tr>
+            @endfor
+            </tbody>
+        </table>
+    @endif
 
     @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getRachunekBankowy() != null && !invoice.getFa().getPlatnosc().getRachunekBankowy().isEmpty())
         !{

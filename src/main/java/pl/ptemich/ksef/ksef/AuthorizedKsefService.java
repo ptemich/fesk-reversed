@@ -74,8 +74,8 @@ public class AuthorizedKsefService {
             List<InvoiceOverviewDto> receivedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT2, InvoiceSource.KSEF_TO_LOCAL);
             invoices.addAll(receivedInvoices);
 
-//            List<InvoiceOverviewDto> generatedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT1, InvoiceSource.KSEF_TO_LOCAL_PROCESSED_COPY);
-//            invoices.addAll(generatedInvoices);
+            List<InvoiceOverviewDto> generatedInvoices = loadInvoicesOfType(ksefInvoicesFilter, InvoiceQuerySubjectType.SUBJECT1, InvoiceSource.KSEF_TO_LOCAL_PROCESSED_COPY);
+            invoices.addAll(generatedInvoices);
 
             invoices.sort(Comparator.comparing(InvoiceOverviewDto::issueDate).reversed());
 

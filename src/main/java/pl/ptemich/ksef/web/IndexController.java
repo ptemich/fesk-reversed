@@ -1,6 +1,10 @@
 package pl.ptemich.ksef.web;
 
 
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -85,18 +89,18 @@ public class IndexController {
         return "downloadOrView";
     }
 
-//    @GetMapping("/download/xml/{ksefNumber}")
-//    public ResponseEntity<byte[]> downloadXml(@PathVariable String ksefNumber) {
-//        byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
-//
-//        HttpHeaders headers = new HttpHeaders();
-//        headers.setContentType(MediaType.APPLICATION_XML);
-//        // This header forces the browser to download the file instead of opening it
-//        headers.setContentDispositionFormData("filename", ksefNumber + ".xml");
-//        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
-//
-//        return new ResponseEntity<>(content, headers, HttpStatus.OK);
-//    }
+    @GetMapping("/download/xml/{ksefNumber}")
+    public ResponseEntity<byte[]> downloadXml(@PathVariable String ksefNumber) {
+        byte[] content = authorizedKsefService.loadInvoiceXml(ksefNumber);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_XML);
+        // This header forces the browser to download the file instead of opening it
+        headers.setContentDispositionFormData("filename", ksefNumber + ".xml");
+        headers.setCacheControl("must-revalidate, post-check=0, pre-check=0");
+
+        return new ResponseEntity<>(content, headers, HttpStatus.OK);
+    }
 
     @GetMapping("/details/local/{ksefNumber}/{invoiceSource}")
     public String detailsAcard(@PathVariable String ksefNumber, @PathVariable InvoiceSource invoiceSource, Model model) {
