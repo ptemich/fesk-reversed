@@ -10,7 +10,7 @@
     </a>
 @else
     @if(invoiceSource != InvoiceSource.KSEF_TO_LOCAL_PROCESSED_COPY)
-        <span hx-get="/copy/${ksefNumber}"
+        <span hx-get="/copy/${ksefNumber}/${invoiceSource}"
               hx-target="#tr_${ksefNumber}"
               hx-swap="innerHTML"
               class="button is-black is-size-7">POBIERZ</span>

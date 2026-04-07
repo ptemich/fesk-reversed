@@ -206,7 +206,7 @@
         </tbody>
     </table>
 
-    @if(invoice.getFa().getPlatnosc().getZaplataCzesciowa() != null && !invoice.getFa().getPlatnosc().getZaplataCzesciowa().isEmpty())
+    @if(invoice.getFa().getPlatnosc() != null && invoice.getFa().getPlatnosc().getZaplataCzesciowa() != null && !invoice.getFa().getPlatnosc().getZaplataCzesciowa().isEmpty())
         <table class="table mx-auto">
             <thead>
                 <tr>
